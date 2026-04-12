@@ -126,6 +126,7 @@
 </div>
 
 <script>
+  const DASHBOARD_REFRESH_MS = 10000;
   const charts = {};
   const byId = (id) => document.getElementById(id);
   const j = (x) => JSON.stringify(x, null, 2);
@@ -274,7 +275,7 @@
     setInterval(async () => {
       await loadDashboard();
       await loadEventFeed();
-    }, 10000);
+    }, DASHBOARD_REFRESH_MS);
   })().catch(err => alert(err.message));
 </script>
 </body>

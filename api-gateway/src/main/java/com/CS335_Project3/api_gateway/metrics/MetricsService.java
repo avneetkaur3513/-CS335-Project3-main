@@ -33,6 +33,9 @@ public class MetricsService {
     @Value("${metrics.max-events:20000}")
     private int maxEvents;
 
+    @Value("${metrics.events-query.max-limit:500}")
+    private int maxEventQueryLimit;
+
     public MetricsService(StringRedisTemplate redisTemplate, ObjectMapper objectMapper) {
         this.redisTemplate = redisTemplate;
         this.objectMapper = objectMapper;
@@ -163,7 +166,7 @@ public class MetricsService {
         String clientFilter = normalizeFilter(client);
         String ipFilter = normalizeFilter(ip);
         String algorithmFilter = normalizeFilter(algorithm);
-        int safeLimit = Math.max(1, Math.min(limit, 500));
+        int safeLimit = Math.max(1, Math.min(limit, maxEventQueryLimit));
 
         List<Event> matched = filterByMinutes(getRecentEvents(), lookbackMinutes).stream()
                 .filter(e -> tenantFilter == null || e.tenantId().equals(tenantFilter))
