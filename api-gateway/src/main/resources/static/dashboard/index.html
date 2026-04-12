@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" class="antialiased">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -79,12 +79,12 @@
     }
   </style>
 </head>
-<body class="text-slate-800 min-h-screen bg-slate-50">
+<body class="antialiased text-slate-800 min-h-screen bg-slate-50">
 
   <header class="sticky top-0 z-50 border-b border-slate-200/80 bg-white/90 backdrop-blur-xl">
     <div class="max-w-[1700px] mx-auto px-4 lg:px-8 h-16 flex items-center gap-3">
       <div class="flex items-center gap-3 min-w-[220px]">
-        <div class="w-9 h-9 rounded-2xl bg-gradient-to-br from-blue-600 to-violet-600 flex items-center justify-center text-white font-bold" aria-label="Gateway Intelligence logo">GI</div>
+        <span class="w-9 h-9 rounded-2xl bg-gradient-to-br from-blue-600 to-violet-600 flex items-center justify-center text-white font-bold" role="img" aria-label="Gateway Intelligence logo">GI</span>
         <div>
           <p class="text-[11px] uppercase tracking-[.18em] text-slate-400">Security Console</p>
           <p class="text-sm font-semibold text-slate-900">Gateway Intelligence</p>
@@ -120,7 +120,9 @@
     </div>
   </header>
 
-  <main id="dashboard-main-panel" role="tabpanel" aria-labelledby="time-pill-1h" class="max-w-[1700px] mx-auto px-4 lg:px-8 py-6 lg:py-8 space-y-6">
+  <main id="dashboard-main-panel" class="max-w-[1700px] mx-auto px-4 lg:px-8 py-6 lg:py-8 space-y-6">
+    <div id="toastHost" aria-live="polite" class="fixed top-20 right-4 z-[70] min-w-[220px] max-w-[320px]"></div>
+    <div id="dashboard-time-panel" role="tabpanel" aria-labelledby="time-pill-1h" class="space-y-6">
 
     <section class="surface rounded-3xl p-5 lg:p-7 fade-up">
       <div class="flex flex-wrap items-start justify-between gap-4">
@@ -137,11 +139,11 @@
 
         <div class="flex flex-wrap gap-2 items-center">
           <div class="glass rounded-2xl p-1 inline-flex" role="tablist" aria-label="time range">
-            <button id="time-pill-15m" class="time-pill px-3 py-1.5 text-xs font-medium rounded-xl" data-minutes="15" role="tab" aria-label="15 minutes" aria-controls="dashboard-main-panel" aria-selected="false">15m</button>
-            <button id="time-pill-1h" class="time-pill px-3 py-1.5 text-xs font-medium rounded-xl bg-white shadow-sm" data-minutes="60" role="tab" aria-label="1 hour" aria-controls="dashboard-main-panel" aria-selected="true">1h</button>
-            <button id="time-pill-24h" class="time-pill px-3 py-1.5 text-xs font-medium rounded-xl" data-minutes="1440" role="tab" aria-label="24 hours" aria-controls="dashboard-main-panel" aria-selected="false">24h</button>
-            <button id="time-pill-7d" class="time-pill px-3 py-1.5 text-xs font-medium rounded-xl" data-minutes="10080" role="tab" aria-label="7 days" aria-controls="dashboard-main-panel" aria-selected="false">7d</button>
-            <button id="time-pill-30d" class="time-pill px-3 py-1.5 text-xs font-medium rounded-xl" data-minutes="43200" role="tab" aria-label="30 days" aria-controls="dashboard-main-panel" aria-selected="false">30d</button>
+            <button id="time-pill-15m" class="time-pill px-3 py-1.5 text-xs font-medium rounded-xl" data-minutes="15" role="tab" aria-label="15 minutes" aria-controls="dashboard-time-panel" aria-selected="false">15m</button>
+            <button id="time-pill-1h" class="time-pill px-3 py-1.5 text-xs font-medium rounded-xl bg-white shadow-sm" data-minutes="60" role="tab" aria-label="1 hour" aria-controls="dashboard-time-panel" aria-selected="true">1h</button>
+            <button id="time-pill-24h" class="time-pill px-3 py-1.5 text-xs font-medium rounded-xl" data-minutes="1440" role="tab" aria-label="24 hours" aria-controls="dashboard-time-panel" aria-selected="false">24h</button>
+            <button id="time-pill-7d" class="time-pill px-3 py-1.5 text-xs font-medium rounded-xl" data-minutes="10080" role="tab" aria-label="7 days" aria-controls="dashboard-time-panel" aria-selected="false">7d</button>
+            <button id="time-pill-30d" class="time-pill px-3 py-1.5 text-xs font-medium rounded-xl" data-minutes="43200" role="tab" aria-label="30 days" aria-controls="dashboard-time-panel" aria-selected="false">30d</button>
           </div>
           <button id="refreshBtn" class="ghost-btn rounded-xl px-3 py-2 text-xs font-medium">Refresh</button>
           <button class="rounded-xl px-3 py-2 text-xs font-medium bg-blue-600 hover:bg-blue-700 text-white">Create Alert</button>
@@ -194,8 +196,8 @@
             <p class="panel-subtitle">Regional suspicious concentration</p>
           </div>
           <div class="rounded-2xl p-3 bg-slate-50 border border-slate-200">
-            <svg viewBox="0 0 800 360" class="w-full h-32" role="img" aria-describedby="geoMeta">
-              <title>Geographic distribution of security threats</title>
+            <svg viewBox="0 0 800 360" class="w-full h-32" role="img" aria-labelledby="geoMapTitle" aria-describedby="geoMeta">
+              <title id="geoMapTitle">Geographic distribution of security threats</title>
               <rect x="0" y="0" width="800" height="360" fill="transparent"></rect>
               <ellipse cx="150" cy="170" rx="100" ry="70" fill="rgba(59,130,246,.15)"></ellipse>
               <ellipse cx="360" cy="150" rx="130" ry="80" fill="rgba(236,72,153,.18)"></ellipse>
@@ -369,6 +371,7 @@
     </section>
 
     <footer class="text-center text-xs text-slate-500 pb-2">Gateway Intelligence · Auto-refresh every <span id="refreshLabel">10s</span></footer>
+    </div>
   </main>
 
 <script>
@@ -380,6 +383,9 @@
   let dashboard = null;
   let selectedClient = null;
   let compareMode = 'current';
+  let unreadNotifications = 3;
+  // Composite confidence scoring constants:
+  // finalScore = clamp(BASELINE..MAX, riskScore*RISK_WEIGHT + min(VOLUME_CAP, log10(requests+1)*VOLUME_SCALE)).
   const CONFIDENCE_BASELINE = 45;
   const CONFIDENCE_MAX = 99;
   const CONFIDENCE_RISK_WEIGHT = 0.72;
@@ -387,8 +393,9 @@
   const CONFIDENCE_VOLUME_SCALE = 12;
 
   function syncNotificationA11y() {
-    const count = Number(($('notifBadge')?.textContent || '0').trim()) || 0;
-    $('notificationsBtn')?.setAttribute('aria-label', `${count} unread notifications`);
+    unreadNotifications = Number(unreadNotifications || 0);
+    $('notifBadge').textContent = String(Math.min(99, unreadNotifications));
+    $('notificationsBtn')?.setAttribute('aria-label', `${unreadNotifications} unread notifications`);
   }
 
   const KPI_CONFIG = [
@@ -449,6 +456,15 @@
     $('geoMeta').textContent = 'Threat hotspots: loading…';
     $('eventMeta').textContent = 'Loading latest event stream…';
     $('clientAnomalies').innerHTML = '<div class="empty-card">Select a client once data loads.</div>';
+  }
+
+  function showToast(message) {
+    const host = $('toastHost');
+    if (!host) return;
+    host.innerHTML = `<div class="surface rounded-2xl px-3 py-2 text-xs text-slate-700 shadow-soft">${escHtml(message)}</div>`;
+    setTimeout(() => {
+      if (host.textContent?.includes(message)) host.innerHTML = '';
+    }, 2200);
   }
 
   function sparkline(id, data, color) {
@@ -723,7 +739,7 @@
 
       const clientId = String(r.clientId || '');
       const clientAttr = encodeURIComponent(clientId);
-      return `<tr class="table-row border-b border-slate-100 ${selectedClient === r.clientId ? 'selected' : ''}" data-client="${clientAttr}" tabindex="0" aria-label="Open details for client ${escHtml(clientId)}">
+      return `<tr class="table-row border-b border-slate-100 ${selectedClient === r.clientId ? 'selected' : ''}" data-client="${clientAttr}" tabindex="0" role="button">
         <td class="px-4 py-3 font-mono">${escHtml(clientId)}</td>
         <td class="px-4 py-3">${sevBadge}</td>
         <td class="px-4 py-3 tabular-nums font-semibold text-orange-500">${Number(r.riskScore).toFixed(1)}</td>
@@ -1010,7 +1026,7 @@
 
     const incidents = events.filter(e => severityFor(e) !== 'low').length;
     $('incidentCount').textContent = incidents + ' active incidents';
-    $('notifBadge').textContent = String(Math.min(99, incidents));
+    unreadNotifications = incidents;
     syncNotificationA11y();
     $('lastUpdated').textContent = 'Updated ' + new Date().toLocaleTimeString();
     $('eventMeta').textContent = `Matched: ${evData.totalMatched ?? events.length} · Showing: ${events.length}`;
@@ -1035,7 +1051,7 @@
       b.classList.toggle('text-slate-900', active);
       b.setAttribute('aria-selected', active ? 'true' : 'false');
       b.tabIndex = active ? 0 : -1;
-      if (active) $('dashboard-main-panel').setAttribute('aria-labelledby', b.id);
+      if (active) $('dashboard-time-panel').setAttribute('aria-labelledby', b.id);
     });
   }
 
@@ -1106,7 +1122,7 @@
   $('applyConfig').onclick = async () => {
     let payload;
     try { payload = JSON.parse($('configJson').value); }
-    catch (e) { alert('Invalid JSON\n\n' + e.message); return; }
+    catch (e) { showToast('Invalid JSON: ' + e.message); return; }
     await get('/config/rate-limit', {
       method:'POST',
       headers:{ 'Content-Type':'application/json' },
@@ -1119,10 +1135,10 @@
   document.addEventListener('keydown', (e) => {
     if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
       e.preventDefault();
-      alert('Command palette placeholder. Search clients, anomalies, API keys, tokens.');
+      showToast('Command palette coming soon.');
     }
   });
-  $('cmdSearch').onclick = () => alert('Command palette placeholder. Search clients, anomalies, API keys, tokens.');
+  $('cmdSearch').onclick = () => showToast('Command palette coming soon.');
 
   (async () => {
     setLoadingState();
