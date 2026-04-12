@@ -65,6 +65,11 @@
   </div>
 
   <div class="row">
+    <div class="card"><canvas id="statusTrendChart" height="120"></canvas></div>
+    <div class="card"><canvas id="latencyTrendChart" height="120"></canvas></div>
+  </div>
+
+  <div class="row">
     <div class="card"><canvas id="algoChart" height="120"></canvas></div>
     <div class="card">
       <div class="k" style="margin-bottom:8px">Top Risky Clients</div>
@@ -100,6 +105,9 @@
         </div>
       </div>
       <div class="muted" id="eventMeta" style="margin-bottom:8px"></div>
+      <div style="margin-bottom:8px">
+        <button id="exportFilteredEventsCsv">Export Filtered CSV</button>
+      </div>
       <div class="table-wrap">
         <table id="eventTable">
           <thead>
@@ -185,6 +193,23 @@
       datasets: [{ label:"Blocked Requests", data: Object.values(data.blocksByAlgorithm || {}), backgroundColor:"#ff5e7d" }]
     }, { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}} });
 
+    upsertChart("statusTrendChart", "line", {
+      labels: ts.labels,
+      datasets: [
+        { label:"200", data: ts.status200 || [], borderColor:"#38d39f", tension:.25, fill:false },
+        { label:"403", data: ts.status403 || [], borderColor:"#ffb84f", tension:.25, fill:false },
+        { label:"429", data: ts.status429 || [], borderColor:"#ff5e7d", tension:.25, fill:false },
+        { label:"5xx", data: ts.status5xx || [], borderColor:"#8a6bff", tension:.25, fill:false }
+      ]
+    }, { responsive:true, maintainAspectRatio:false });
+
+    upsertChart("latencyTrendChart", "line", {
+      labels: ts.labels,
+      datasets: [
+        { label:"Avg Latency (ms)", data: ts.avgLatencyMs, borderColor:"#8fc9ff", backgroundColor:"rgba(143,201,255,.18)", tension:.25, fill:true }
+      ]
+    }, { responsive:true, maintainAspectRatio:false });
+
     renderTable("riskTable", data.riskyClients || [], (r) =>
       `<td class="mono">${r.clientId}</td><td>${r.riskScore}</td><td>${r.blockedRate}%</td>`);
 
@@ -223,6 +248,7 @@
     byId("eventMeta").textContent = `Matched: ${data.totalMatched ?? 0} | Showing: ${data.returned ?? 0}`;
     renderTable("eventTable", data.events || [], (r) =>
       `<td class="mono">${fmtTs(r.timestamp)}</td><td>${r.tenantId}</td><td>${r.appId}</td><td class="mono">${r.apiKey}</td><td class="mono">${r.ip}</td><td>${r.statusCode}</td><td>${r.algorithm}</td><td>${r.latencyMs}ms</td><td>${r.decision}</td><td class="mono">${r.path}</td>`);
+    return data;
   }
 
   async function loadConfig(){
@@ -244,6 +270,21 @@
   byId("clearEventFilters").onclick = async () => {
     ["fTenant","fApp","fClient","fIp","fStatus","fAlgorithm","fLimit"].forEach(id => byId(id).value = "");
     await loadEventFeed();
+  };
+  byId("exportFilteredEventsCsv").onclick = async () => {
+    const data = await loadEventFeed();
+    const rows = data.events || [];
+    const header = ["timestamp","tenantId","appId","apiKey","ip","statusCode","algorithm","latencyMs","decision","reason","path"];
+    const toCsv = (v) => `"${String(v ?? "").replaceAll("\"", "\"\"")}"`;
+    const csv = [
+      header.join(","),
+      ...rows.map(r => header.map(h => toCsv(h === "timestamp" ? fmtTs(r[h]) : r[h])).join(","))
+    ].join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `filtered-events-${Date.now()}.csv`;
+    a.click();
   };
 
   byId("downloadConfig").onclick = async () => {

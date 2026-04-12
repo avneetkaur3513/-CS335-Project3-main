@@ -238,22 +238,38 @@ public class MetricsService {
         List<Long> totalSeries = new ArrayList<>();
         List<Long> blockedSeries = new ArrayList<>();
         List<Double> latencySeries = new ArrayList<>();
+        List<Long> status200Series = new ArrayList<>();
+        List<Long> status403Series = new ArrayList<>();
+        List<Long> status429Series = new ArrayList<>();
+        List<Long> status5xxSeries = new ArrayList<>();
 
         for (String label : labels) {
             List<Event> bucket = minuteBuckets.get(label);
             long total = bucket.size();
             long blocked = bucket.stream().filter(Event::isBlocked).count();
             double avgLatency = bucket.stream().mapToLong(Event::latencyMs).average().orElse(0.0);
+            long status200 = bucket.stream().filter(e -> e.statusCode() == 200).count();
+            long status403 = bucket.stream().filter(e -> e.statusCode() == 403).count();
+            long status429 = bucket.stream().filter(e -> e.statusCode() == 429).count();
+            long status5xx = bucket.stream().filter(e -> e.statusCode() >= 500 && e.statusCode() <= 599).count();
             totalSeries.add(total);
             blockedSeries.add(blocked);
             latencySeries.add(round(avgLatency));
+            status200Series.add(status200);
+            status403Series.add(status403);
+            status429Series.add(status429);
+            status5xxSeries.add(status5xx);
         }
 
         return Map.of(
                 "labels", labels,
                 "requests", totalSeries,
                 "blocked", blockedSeries,
-                "avgLatencyMs", latencySeries
+                "avgLatencyMs", latencySeries,
+                "status200", status200Series,
+                "status403", status403Series,
+                "status429", status429Series,
+                "status5xx", status5xxSeries
         );
     }
 
