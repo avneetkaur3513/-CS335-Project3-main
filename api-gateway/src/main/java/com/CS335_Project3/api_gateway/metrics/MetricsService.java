@@ -2,6 +2,8 @@ package com.CS335_Project3.api_gateway.metrics;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
@@ -21,6 +23,7 @@ import java.util.stream.Collectors;
 //@Component makes Spring create one single instance shared across the whole app
 @Component
 public class MetricsService {
+    private static final Logger log = LoggerFactory.getLogger(MetricsService.class);
 
     private static final String EVENTS_KEY = "gateway:metrics:events";
     private static final DateTimeFormatter MINUTE_BUCKET_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm").withZone(ZoneOffset.UTC);
@@ -69,7 +72,8 @@ public class MetricsService {
         try {
             redisTemplate.opsForList().rightPush(EVENTS_KEY, objectMapper.writeValueAsString(event));
             redisTemplate.opsForList().trim(EVENTS_KEY, -maxEvents, -1);
-        } catch (JsonProcessingException ignored) {
+        } catch (JsonProcessingException e) {
+            log.warn("Failed to serialize metrics event for apiKey={}", event.apiKey(), e);
         }
     }
 
@@ -250,7 +254,8 @@ public class MetricsService {
             }
             try {
                 events.add(objectMapper.readValue(value, Event.class));
-            } catch (JsonProcessingException ignored) {
+            } catch (JsonProcessingException e) {
+                log.warn("Skipping invalid metrics event payload from Redis", e);
             }
         }
         return events;
