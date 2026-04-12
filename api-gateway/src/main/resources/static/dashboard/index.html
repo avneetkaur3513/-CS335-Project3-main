@@ -260,7 +260,7 @@
     try {
       payload = JSON.parse(byId("configJson").value);
     } catch (err) {
-      alert(`Invalid JSON: ${err.message}`);
+      alert(`Invalid JSON configuration. Please check syntax (quotes, commas, brackets) and try again.\n\nDetails: ${err.message}`);
       return;
     }
     await fetchJson("/config/rate-limit", {
