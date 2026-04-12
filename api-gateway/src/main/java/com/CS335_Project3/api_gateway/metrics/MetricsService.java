@@ -17,7 +17,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 //@Component makes Spring create one single instance shared across the whole app
@@ -282,7 +281,7 @@ public class MetricsService {
                          int statusCode,
                          long latencyMs) {
         boolean isBlocked() {
-            return Objects.equals(decision, "blocked") || statusCode == 401 || statusCode == 403 || statusCode == 429;
+            return "blocked".equalsIgnoreCase(decision) || statusCode == 401 || statusCode == 403 || statusCode == 429;
         }
     }
 }
