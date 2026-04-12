@@ -137,8 +137,8 @@
 
         <div class="flex flex-wrap gap-2 items-center">
           <div class="glass rounded-2xl p-1 inline-flex" role="tablist" aria-label="time range">
-            <button id="time-pill-15m" class="time-pill px-3 py-1.5 text-xs font-medium rounded-xl bg-white shadow-sm" data-minutes="15" role="tab" aria-label="15 minutes" aria-controls="dashboard-main-panel" aria-selected="true">15m</button>
-            <button id="time-pill-1h" class="time-pill px-3 py-1.5 text-xs font-medium rounded-xl" data-minutes="60" role="tab" aria-label="1 hour" aria-controls="dashboard-main-panel" aria-selected="false">1h</button>
+            <button id="time-pill-15m" class="time-pill px-3 py-1.5 text-xs font-medium rounded-xl" data-minutes="15" role="tab" aria-label="15 minutes" aria-controls="dashboard-main-panel" aria-selected="false">15m</button>
+            <button id="time-pill-1h" class="time-pill px-3 py-1.5 text-xs font-medium rounded-xl bg-white shadow-sm" data-minutes="60" role="tab" aria-label="1 hour" aria-controls="dashboard-main-panel" aria-selected="true">1h</button>
             <button id="time-pill-24h" class="time-pill px-3 py-1.5 text-xs font-medium rounded-xl" data-minutes="1440" role="tab" aria-label="24 hours" aria-controls="dashboard-main-panel" aria-selected="false">24h</button>
             <button id="time-pill-7d" class="time-pill px-3 py-1.5 text-xs font-medium rounded-xl" data-minutes="10080" role="tab" aria-label="7 days" aria-controls="dashboard-main-panel" aria-selected="false">7d</button>
             <button id="time-pill-30d" class="time-pill px-3 py-1.5 text-xs font-medium rounded-xl" data-minutes="43200" role="tab" aria-label="30 days" aria-controls="dashboard-main-panel" aria-selected="false">30d</button>
@@ -408,6 +408,15 @@
     return Number(value).toLocaleString() + suffix;
   }
 
+  function escHtml(v) {
+    return String(v ?? '')
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#39;');
+  }
+
   function animateNumber(el, from, to, formatter) {
     const start = performance.now();
     const dur = 500;
@@ -509,7 +518,7 @@
     const v = (d || '').toLowerCase();
     if (v.includes('block')) return '<span class="badge bg-rose-50 text-rose-600">Blocked</span>';
     if (v.includes('allow')) return '<span class="badge bg-emerald-50 text-emerald-600">Allowed</span>';
-    return '<span class="badge bg-blue-50 text-blue-600">'+ (d || 'Other') +'</span>';
+    return '<span class="badge bg-blue-50 text-blue-600">'+ escHtml(d || 'Other') +'</span>';
   }
 
   function statusBadge(code) {
@@ -664,7 +673,7 @@
     const values = Object.values(statusCodes || {});
     const sum = values.reduce((a,b) => a+b, 0) || 1;
     $('statusLegend').innerHTML = keys.length
-      ? keys.map((k, i) => `<div class="flex justify-between items-center"><span class="flex items-center gap-2"><span class="status-dot" style="background:${colors[i]}"></span>${k}</span><span class="text-slate-500">${values[i]} (${Math.round(values[i]/sum*100)}%)</span></div>`).join('')
+      ? keys.map((k, i) => `<div class="flex justify-between items-center"><span class="flex items-center gap-2"><span class="status-dot" style="background:${colors[i]}"></span>${escHtml(k)}</span><span class="text-slate-500">${values[i]} (${Math.round(values[i]/sum*100)}%)</span></div>`).join('')
       : '<p class="text-xs text-slate-400">No status data</p>';
   }
 
@@ -711,8 +720,10 @@
           ? '<span class="badge bg-amber-50 text-amber-600">Warning</span>'
           : '<span class="badge bg-rose-50 text-rose-600">Degraded</span>';
 
-      return `<tr class="table-row border-b border-slate-100 ${selectedClient === r.clientId ? 'selected' : ''}" data-client="${r.clientId}" tabindex="0" role="button" aria-label="Open details for client ${r.clientId}">
-        <td class="px-4 py-3 font-mono">${r.clientId}</td>
+      const clientId = String(r.clientId || '');
+      const clientAttr = encodeURIComponent(clientId);
+      return `<tr class="table-row border-b border-slate-100 ${selectedClient === r.clientId ? 'selected' : ''}" data-client="${clientAttr}" tabindex="0" role="button" aria-label="Open details for client ${escHtml(clientId)}">
+        <td class="px-4 py-3 font-mono">${escHtml(clientId)}</td>
         <td class="px-4 py-3">${sevBadge}</td>
         <td class="px-4 py-3 tabular-nums font-semibold text-orange-500">${Number(r.riskScore).toFixed(1)}</td>
         <td class="px-4 py-3 tabular-nums">${Number(r.blockedRate).toFixed(1)}%</td>
@@ -726,7 +737,7 @@
 
     tb.querySelectorAll('tr[data-client]').forEach(tr => {
       const openDetails = () => {
-        const c = tr.dataset.client;
+        const c = decodeURIComponent(tr.dataset.client || '');
         const row = rows.find(x => x.clientId === c);
         loadClientDetails(row);
       };
@@ -828,17 +839,22 @@
     tb.innerHTML = events.map(e => {
       const sev = severityFor(e);
       const type = deriveEventType(e);
+      const path = escHtml(e.path || '');
+      const tenant = escHtml(e.tenantId || '—');
+      const app = escHtml(e.appId || '—');
+      const apiKey = escHtml(e.apiKey || '—');
+      const ip = escHtml(e.ip || '—');
       return `<tr class="border-b border-slate-100 hover:bg-slate-50/70">
         <td class="px-4 py-3 text-slate-500">${new Date(e.timestamp).toLocaleTimeString()}</td>
         <td class="px-4 py-3"><span class="badge bg-blue-50 text-blue-600">${type}</span></td>
         <td class="px-4 py-3">${severityBadge(sev)}</td>
-        <td class="px-4 py-3">${e.tenantId || '—'} / ${e.appId || '—'}</td>
-        <td class="px-4 py-3 font-mono">${e.apiKey || '—'}</td>
-        <td class="px-4 py-3 font-mono text-slate-500">${e.ip || '—'} (${regionFromIp(e.ip)})</td>
+        <td class="px-4 py-3">${tenant} / ${app}</td>
+        <td class="px-4 py-3 font-mono">${apiKey}</td>
+        <td class="px-4 py-3 font-mono text-slate-500">${ip} (${regionFromIp(e.ip)})</td>
         <td class="px-4 py-3">${statusBadge(e.statusCode)}</td>
         <td class="px-4 py-3">${decisionBadge(e.decision)}</td>
         <td class="px-4 py-3 tabular-nums">${e.latencyMs ?? 0}ms</td>
-        <td class="px-4 py-3 font-mono truncate max-w-[180px]" title="${e.path || ''}">${e.path || '—'}</td>
+        <td class="px-4 py-3 font-mono truncate max-w-[180px]" title="${path}">${path || '—'}</td>
       </tr>`;
     }).join('');
   }
