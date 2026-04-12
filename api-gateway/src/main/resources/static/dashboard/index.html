@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Gateway Intelligence</title>
+  <title>Gateway Intelligence Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -84,7 +84,7 @@
   <header class="sticky top-0 z-50 border-b border-slate-200/80 bg-white/90 backdrop-blur-xl">
     <div class="max-w-[1700px] mx-auto px-4 lg:px-8 h-16 flex items-center gap-3">
       <div class="flex items-center gap-3 min-w-[220px]">
-        <span class="w-9 h-9 rounded-2xl bg-gradient-to-br from-blue-600 to-violet-600 flex items-center justify-center text-white font-bold">GI</span>
+        <span class="w-9 h-9 rounded-2xl bg-gradient-to-br from-blue-600 to-violet-600 flex items-center justify-center text-white font-bold" aria-label="Gateway Intelligence logo">GI</span>
         <div>
           <p class="text-[11px] uppercase tracking-[.18em] text-slate-400">Security Console</p>
           <p class="text-sm font-semibold text-slate-900">Gateway Intelligence</p>
@@ -92,7 +92,7 @@
       </div>
 
       <div class="hidden md:flex flex-1 justify-center">
-        <button id="cmdSearch" class="w-full max-w-xl h-10 rounded-2xl px-4 flex items-center gap-3 text-sm border border-slate-200 bg-slate-50 text-slate-500 text-left">
+        <button id="cmdSearch" aria-label="Open search palette" class="w-full max-w-xl h-10 rounded-2xl px-4 flex items-center gap-3 text-sm border border-slate-200 bg-slate-50 text-slate-500 text-left">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35m1.85-5.65a7.5 7.5 0 11-15 0 7.5 7.5 0 0115 0z"/></svg>
           <span class="truncate">Search clients, anomalies, API keys, tokens…</span>
           <span class="ml-auto text-xs px-2 py-0.5 rounded-md border border-slate-200">⌘K</span>
@@ -102,7 +102,7 @@
       <div class="ml-auto flex items-center gap-2">
         <button id="notificationsBtn" class="ghost-btn rounded-xl px-2.5 py-2 relative" aria-label="Notifications">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.4-1.4a2 2 0 01-.6-1.43V11a6 6 0 10-12 0v3.17c0 .54-.21 1.06-.59 1.44L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
-          <span id="notifBadge" class="absolute -top-1 -right-1 w-4 h-4 rounded-full text-[10px] flex items-center justify-center bg-rose-500 text-white">3</span>
+          <span id="notifBadge" aria-live="polite" class="absolute -top-1 -right-1 w-4 h-4 rounded-full text-[10px] flex items-center justify-center bg-rose-500 text-white">3</span>
         </button>
         <select id="envSelect" class="ghost-btn rounded-xl px-3 py-2 text-xs font-medium">
           <option>Production</option>
@@ -113,7 +113,7 @@
         <div class="hidden sm:flex items-center gap-2 rounded-xl px-3 py-2 border border-emerald-200 bg-emerald-50 text-emerald-700 text-xs font-medium">
           <span class="w-2 h-2 rounded-full bg-emerald-500 pulse-dot"></span>Live connection
         </div>
-        <button class="ghost-btn rounded-xl p-1.5">
+        <button class="ghost-btn rounded-xl p-1.5" aria-label="User profile menu">
           <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-slate-800 to-slate-600 text-white text-xs font-semibold flex items-center justify-center">AK</div>
         </button>
       </div>
@@ -392,7 +392,7 @@
   const CONFIDENCE_VOLUME_CAP = 28;
   const CONFIDENCE_VOLUME_SCALE = 12;
 
-  function syncNotificationA11y() {
+  function syncNotificationAccessibility() {
     unreadNotifications = Number(unreadNotifications || 0);
     $('notifBadge').textContent = String(Math.min(99, unreadNotifications));
     $('notificationsBtn')?.setAttribute('aria-label', `${unreadNotifications} unread notifications`);
@@ -546,7 +546,7 @@
   }
 
   function regionFromIp(ip) {
-    // Fallback-only mapping for UI grouping when backend geo-IP enrichment is unavailable.
+    // UI-only deterministic region grouping used because dashboard event rows currently expose IP but not geo region metadata.
     if (!ip) return 'global';
     // Deterministic fallback mapping: take first numeric IP segment, then modulo into 5 region buckets.
     // This keeps map rendering stable when geo-IP enrichment is unavailable in backend data.
@@ -1028,7 +1028,7 @@
     const incidents = events.filter(e => severityFor(e) !== 'low').length;
     $('incidentCount').textContent = incidents + ' active incidents';
     unreadNotifications = incidents;
-    syncNotificationA11y();
+    syncNotificationAccessibility();
     $('lastUpdated').textContent = 'Updated ' + new Date().toLocaleTimeString();
     $('eventMeta').textContent = `Matched: ${evData.totalMatched ?? events.length} · Showing: ${events.length}`;
 
@@ -1148,7 +1148,7 @@
 
   (async () => {
     setLoadingState();
-    syncNotificationA11y();
+    syncNotificationAccessibility();
     await loadDashboard();
     await loadConfig();
     setInterval(loadDashboard, REFRESH_MS);
