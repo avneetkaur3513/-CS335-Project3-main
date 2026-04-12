@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Gateway Intelligence Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
@@ -729,6 +730,7 @@
     rows.forEach(r => {
       const tr = document.createElement("tr");
       tr.className = "data-row border-b border-slate-50 dark:border-slate-700/50" + (selClient===r.clientId?" selected":"");
+      tr.dataset.clientId = r.clientId;
       tr.innerHTML = `<td class="px-4 py-2.5 font-mono text-slate-700 dark:text-slate-300 max-w-[140px] truncate">${r.clientId}</td><td class="px-4 py-2.5">${rBadge(r.riskScore)}</td><td class="px-4 py-2.5 tabular-nums text-slate-600 dark:text-slate-400">${r.blockedRate}%</td><td class="px-4 py-2.5 tabular-nums text-slate-600 dark:text-slate-400">${(r.count||r.totalRequests||0).toLocaleString()}</td><td class="px-4 py-2.5">${lvlBadge(r.blockedRate)}</td>`;
       tr.onclick = () => loadClientDetails({ clientId:r.clientId, riskScore:r.riskScore, blockedRate:r.blockedRate });
       tb.appendChild(tr);
@@ -758,9 +760,9 @@
   async function loadClientDetails(row) {
     const mins = $("minutes").value;
     selClient = row.clientId;
-    // highlight
-    document.querySelectorAll("#riskTableBody tr").forEach(tr => {
-      tr.classList.toggle("selected", tr.querySelector("td")?.textContent?.trim()===row.clientId);
+    // highlight using data-client-id attribute instead of text content comparison
+    document.querySelectorAll("#riskTableBody tr[data-client-id]").forEach(tr => {
+      tr.classList.toggle("selected", tr.dataset.clientId === row.clientId);
     });
 
     $("clientEmptyState").classList.add("hidden");
@@ -896,8 +898,8 @@
     const data = await loadEventFeed();
     const rows = data.events || [];
     const hdr = ["timestamp","tenantId","appId","apiKey","ip","statusCode","algorithm","latencyMs","decision","reason","path"];
-    const csv2 = (v) => '"' + String(v??'').replaceAll('"','""') + '"';
-    const csv = [hdr.join(","), ...rows.map(r=>hdr.map(h=>csv2(h==="timestamp"?fmtTs(r[h]):r[h])).join(","))].join("\n");
+    const csvEscape = (v) => '"' + String(v??'').replaceAll('"','""') + '"';
+    const csv = [hdr.join(","), ...rows.map(r=>hdr.map(h=>csvEscape(h==="timestamp"?fmtTs(r[h]):r[h])).join(","))].join("\n");
     const a = Object.assign(document.createElement("a"), { href:URL.createObjectURL(new Blob([csv],{type:"text/csv"})), download:"events-"+Date.now()+".csv" });
     a.click();
   };
