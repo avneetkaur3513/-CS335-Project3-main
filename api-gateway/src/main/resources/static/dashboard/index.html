@@ -11,924 +11,1151 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
-      darkMode: 'class',
-      theme: { extend: { fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] } } }
-    }
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+          boxShadow: {
+            soft: '0 8px 30px rgba(15,23,42,.05)',
+            lift: '0 14px 34px rgba(15,23,42,.08)'
+          }
+        }
+      }
+    };
   </script>
   <style>
-    * { font-family: 'Inter', system-ui, sans-serif; box-sizing: border-box; }
-    @keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
-    .fade-up { animation: fadeUp 0.4s ease both; }
-    .d1{animation-delay:.05s} .d2{animation-delay:.1s} .d3{animation-delay:.15s} .d4{animation-delay:.2s}
-    .d5{animation-delay:.25s} .d6{animation-delay:.3s} .d7{animation-delay:.35s} .d8{animation-delay:.4s}
-    @keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.4)} }
-    .pulse-dot { animation: pulse-dot 2s ease-in-out infinite; }
-    .kpi-card { transition: transform .2s, box-shadow .2s; }
-    .kpi-card:hover { transform: translateY(-2px) scale(1.01); box-shadow: 0 8px 30px rgba(0,0,0,.08); }
-    .data-row { transition: background .12s; cursor: pointer; }
-    .data-row:hover { background: #f8fafc; }
-    .dark .data-row:hover { background: #1e293b; }
-    .data-row.selected { background: #eff6ff; }
-    .dark .data-row.selected { background: #1e3a5f; }
-    ::-webkit-scrollbar { width:5px; height:5px; }
-    ::-webkit-scrollbar-thumb { background:#cbd5e1; border-radius:3px; }
-    .dark ::-webkit-scrollbar-thumb { background:#475569; }
-    .badge { display:inline-flex; align-items:center; font-size:11px; font-weight:600; padding:2px 8px; border-radius:9999px; }
-    .b-crit { background:#fff1f2; color:#e11d48; }
-    .b-med  { background:#fffbeb; color:#b45309; }
-    .b-low  { background:#f0fdf4; color:#15803d; }
-    .b-blk  { background:#fff1f2; color:#be123c; }
-    .b-warn { background:#fffbeb; color:#92400e; }
-    .b-ok   { background:#f0fdf4; color:#166534; }
-    .b-info { background:#eff6ff; color:#1d4ed8; }
-    .dark .b-crit { background:#4c0519; color:#fda4af; }
-    .dark .b-med  { background:#451a03; color:#fcd34d; }
-    .dark .b-low  { background:#052e16; color:#6ee7b7; }
-    .dark .b-blk  { background:#4c0519; color:#fda4af; }
-    .dark .b-warn { background:#431407; color:#fdba74; }
-    .dark .b-ok   { background:#052e16; color:#6ee7b7; }
-    .dark .b-info { background:#1e3a5f; color:#93c5fd; }
-    .ev-item { border-left:3px solid transparent; transition:border-color .2s,background .12s; }
-    .ev-item:hover { background:#f8fafc; }
-    .dark .ev-item:hover { background:#1e293b; }
-    .ev-blocked  { border-left-color:#e11d48; }
-    .ev-allowed  { border-left-color:#10b981; }
-    .ev-other    { border-left-color:#3b82f6; }
-    input:focus, select:focus, textarea:focus { outline:none; border-color:#2563eb !important; box-shadow:0 0 0 3px rgba(37,99,235,.1); }
-    .btn-p { background:#2563eb; color:white; transition:background .15s; }
-    .btn-p:hover { background:#1d4ed8; }
-    .btn-s { background:white; border:1px solid #e2e8f0; color:#374151; transition:background .15s; }
-    .btn-s:hover { background:#f8fafc; }
-    .dark .btn-s { background:#1e293b; border-color:#334155; color:#e2e8f0; }
-    .dark .btn-s:hover { background:#273348; }
+    * { box-sizing: border-box; font-family: Inter, system-ui, sans-serif; }
+    body {
+      background:
+        radial-gradient(1200px 400px at 20% -20%, rgba(37,99,235,.08), transparent 60%),
+        radial-gradient(1000px 360px at 100% -20%, rgba(139,92,246,.08), transparent 60%),
+        #f8fafc;
+    }
+    .surface {
+      background: linear-gradient(180deg, rgba(255,255,255,.98), rgba(255,255,255,.94));
+      border: 1px solid rgba(148,163,184,.25);
+      box-shadow: 0 4px 20px rgba(15,23,42,.04);
+      backdrop-filter: blur(8px);
+    }
+    .kpi-card { transition: all .22s ease; }
+    .kpi-card:hover { transform: translateY(-3px); box-shadow: 0 14px 34px rgba(15,23,42,.08); }
+    article.surface { transition: transform .22s ease, box-shadow .22s ease; }
+    article.surface:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(15,23,42,.06); }
+    .fade-up { animation: fadeUp .45s ease both; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(10px) } to { opacity: 1; transform: translateY(0) } }
+    @keyframes pulseDot { 0%,100% { opacity: 1; transform: scale(1) } 50% { opacity: .45; transform: scale(1.3)} }
+    .pulse-dot { animation: pulseDot 1.8s ease-in-out infinite; }
+    .badge { display:inline-flex; align-items:center; border-radius:9999px; padding:2px 9px; font-size:11px; font-weight:600; }
+    .ghost-btn, .time-pill, .cmp-btn {
+      border:1px solid #dbe3ef;
+      transition: transform .16s ease, background-color .16s ease, box-shadow .16s ease, border-color .16s ease;
+    }
+    .ghost-btn { background: rgba(255,255,255,.88); }
+    .ghost-btn:hover, .time-pill:hover, .cmp-btn:hover { background:#fff; transform: translateY(-1px); }
+    .ghost-btn:active, .time-pill:active, .cmp-btn:active { transform: translateY(0); }
+    .status-dot{ width:9px; height:9px; border-radius:9999px; display:inline-block; }
+    .table-row { transition: background .12s ease, transform .12s ease; }
+    .table-row:hover { background: rgba(59,130,246,.06); transform: translateX(1px); }
+    .table-row.selected { background: rgba(59,130,246,.12); }
+    .glass { background: rgba(255,255,255,.6); backdrop-filter: blur(10px); border:1px solid rgba(148,163,184,.3); }
+    .skeleton {
+      background: linear-gradient(90deg, rgba(226,232,240,.45), rgba(226,232,240,.78), rgba(226,232,240,.45));
+      background-size: 200% 100%; animation: sk 1.2s linear infinite;
+    }
+    @keyframes sk { 0% { background-position: 200% 0 } 100% { background-position: -200% 0 } }
+    .map-cell { border-radius: 8px; border:1px solid rgba(148,163,184,.2); }
+    .panel-title { font-size: 1rem; line-height: 1.45; font-weight: 600; color: #0f172a; }
+    .panel-subtitle { font-size: .75rem; line-height: 1.35; color: #64748b; }
+    .empty-card { border: 1px dashed rgba(148,163,184,.45); background: rgba(248,250,252,.7); border-radius: 14px; padding: 16px; text-align: center; color: #64748b; font-size: 12px; }
+    .section-loading { opacity: .75; pointer-events: none; }
+
+    @media (max-width: 900px) {
+      #dashboard-main-panel { padding-top: 1rem !important; padding-bottom: 1rem !important; }
+      #dashboard-main-panel .surface { border-radius: 1rem !important; }
+      #dashboard-main-panel .h-72 { height: 15rem !important; }
+      #dashboard-main-panel .h-44 { height: 11.5rem !important; }
+      #dashboard-main-panel .h-40 { height: 10.5rem !important; }
+      #riskTableBody td, #eventTableBody td { white-space: nowrap; }
+      #eventMeta, #geoMeta, #clientPanelSub { line-height: 1.4; }
+    }
   </style>
 </head>
-<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 min-h-screen">
+<body class="antialiased text-slate-800 min-h-screen bg-slate-50">
 
-<!-- NAVBAR -->
-<header class="sticky top-0 z-50 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 shadow-sm">
-  <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 flex items-center gap-3 h-14">
-    <div class="flex items-center gap-2 shrink-0">
-      <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-600 to-violet-600 flex items-center justify-center">
-        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-      </div>
-      <span class="font-bold text-slate-900 dark:text-slate-100 text-sm hidden sm:block">Gateway Intelligence</span>
-    </div>
-    <div class="flex-1 max-w-md mx-4 hidden md:block">
-      <div class="relative">
-        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-        <input type="text" id="globalSearch" placeholder="Search clients, API keys, IPs…" class="w-full pl-9 pr-4 py-2 text-sm bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-700 dark:text-slate-200 placeholder-slate-400" />
-      </div>
-    </div>
-    <div class="flex items-center gap-2 ml-auto">
-      <select id="minutes" class="text-xs font-medium bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-slate-700 dark:text-slate-200 cursor-pointer">
-        <option value="15">15 min</option>
-        <option value="60" selected>1 hour</option>
-        <option value="360">6 hours</option>
-        <option value="1440">24 hours</option>
-      </select>
-      <button id="refreshBtn" class="btn-s text-xs font-medium px-3 py-2 rounded-lg flex items-center gap-1.5 cursor-pointer">
-        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-        <span class="hidden sm:inline">Refresh</span>
-      </button>
-      <button id="themeToggle" class="btn-s p-2 rounded-lg cursor-pointer" title="Toggle dark mode">
-        <svg id="iconSun" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-        <svg id="iconMoon" class="w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
-      </button>
-      <div class="flex items-center gap-1.5 text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 px-3 py-1.5 rounded-full">
-        <div class="w-2 h-2 rounded-full bg-emerald-500 pulse-dot"></div>
-        <span class="hidden sm:inline">Live</span>
-      </div>
-    </div>
-  </div>
-</header>
-
-<main class="max-w-screen-2xl mx-auto px-4 sm:px-6 py-6">
-
-  <!-- Header -->
-  <div class="fade-up mb-8">
-    <div class="flex flex-wrap items-start justify-between gap-4">
-      <div>
-        <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">Gateway Intelligence</h1>
-        <p class="mt-1 text-slate-500 dark:text-slate-400 text-sm">Real-time observability, anomaly detection, and traffic intelligence</p>
-        <div class="flex items-center gap-3 mt-2">
-          <span class="text-xs text-slate-400 dark:text-slate-500" id="lastUpdated">Initializing…</span>
+  <header class="sticky top-0 z-50 border-b border-slate-200/80 bg-white/90 backdrop-blur-xl">
+    <div class="max-w-[1700px] mx-auto px-4 lg:px-8 h-16 flex items-center gap-3">
+      <div class="flex items-center gap-3 min-w-[220px]">
+        <span class="w-9 h-9 rounded-2xl bg-gradient-to-br from-blue-600 to-violet-600 flex items-center justify-center text-white font-bold" aria-label="Gateway Intelligence logo">GI</span>
+        <div>
+          <p class="text-[11px] uppercase tracking-[.18em] text-slate-400">Security Console</p>
+          <p class="text-sm font-semibold text-slate-900">Gateway Intelligence</p>
         </div>
       </div>
-      <div class="flex items-center gap-2">
-        <button id="exportReportBtn" class="btn-s text-xs font-medium px-3 py-2 rounded-lg flex items-center gap-1.5 cursor-pointer">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-          Export
+
+      <div class="hidden md:flex flex-1 justify-center">
+        <button id="cmdSearch" aria-label="Open search palette" class="w-full max-w-xl h-10 rounded-2xl px-4 flex items-center gap-3 text-sm border border-slate-200 bg-slate-50 text-slate-500 text-left">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35m1.85-5.65a7.5 7.5 0 11-15 0 7.5 7.5 0 0115 0z"/></svg>
+          <span class="truncate">Search clients, anomalies, API keys, tokens…</span>
+          <span class="ml-auto text-xs px-2 py-0.5 rounded-md border border-slate-200">⌘K</span>
         </button>
-        <button class="btn-p text-xs font-medium px-3 py-2 rounded-lg flex items-center gap-1.5 cursor-pointer" onclick="alert('Configure alerts in your monitoring system.')">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
-          Create Alert
+      </div>
+
+      <div class="ml-auto flex items-center gap-2">
+        <button id="notificationsBtn" class="ghost-btn rounded-xl px-2.5 py-2 relative" aria-label="Notifications">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.4-1.4a2 2 0 01-.6-1.43V11a6 6 0 10-12 0v3.17c0 .54-.21 1.06-.59 1.44L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+          <span id="notifBadge" aria-live="polite" class="absolute -top-1 -right-1 w-4 h-4 rounded-full text-[10px] flex items-center justify-center bg-rose-500 text-white">3</span>
+        </button>
+        <select id="envSelect" class="ghost-btn rounded-xl px-3 py-2 text-xs font-medium">
+          <option>Production</option>
+          <option>Staging</option>
+          <option>Dev</option>
+        </select>
+        <button id="exportReportBtn" class="ghost-btn rounded-xl px-3 py-2 text-xs font-medium">Export</button>
+        <div class="hidden sm:flex items-center gap-2 rounded-xl px-3 py-2 border border-emerald-200 bg-emerald-50 text-emerald-700 text-xs font-medium">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 pulse-dot"></span>Live connection
+        </div>
+        <button class="ghost-btn rounded-xl p-1.5" aria-label="User profile menu">
+          <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-slate-800 to-slate-600 text-white text-xs font-semibold flex items-center justify-center">AK</div>
         </button>
       </div>
     </div>
-  </div>
+  </header>
 
-  <!-- KPI CARDS -->
-  <div class="grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-8 gap-3 mb-5">
-    <!-- Total -->
-    <div class="kpi-card fade-up d1 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-4 shadow-sm">
-      <div class="flex items-start justify-between mb-2">
-        <span class="text-xs font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wide">Total</span>
-        <div class="w-6 h-6 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center">
-          <svg class="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
-        </div>
-      </div>
-      <div class="text-xl font-bold tabular-nums text-slate-900 dark:text-slate-100" id="kTotal">—</div>
-      <canvas id="sparkTotal" class="mt-2 w-full" height="26"></canvas>
-    </div>
-    <!-- Allowed -->
-    <div class="kpi-card fade-up d2 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-4 shadow-sm">
-      <div class="flex items-start justify-between mb-2">
-        <span class="text-xs font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wide">Allowed</span>
-        <div class="w-6 h-6 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 flex items-center justify-center">
-          <svg class="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-        </div>
-      </div>
-      <div class="text-xl font-bold tabular-nums text-emerald-600 dark:text-emerald-400" id="kAllowed">—</div>
-      <canvas id="sparkAllowed" class="mt-2 w-full" height="26"></canvas>
-    </div>
-    <!-- Blocked -->
-    <div class="kpi-card fade-up d3 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-4 shadow-sm">
-      <div class="flex items-start justify-between mb-2">
-        <span class="text-xs font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wide">Blocked</span>
-        <div class="w-6 h-6 rounded-lg bg-rose-50 dark:bg-rose-900/30 flex items-center justify-center">
-          <svg class="w-3.5 h-3.5 text-rose-500 dark:text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
-        </div>
-      </div>
-      <div class="text-xl font-bold tabular-nums text-rose-500 dark:text-rose-400" id="kBlocked">—</div>
-      <canvas id="sparkBlocked" class="mt-2 w-full" height="26"></canvas>
-    </div>
-    <!-- Latency -->
-    <div class="kpi-card fade-up d4 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-4 shadow-sm">
-      <div class="flex items-start justify-between mb-2">
-        <span class="text-xs font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wide">Latency</span>
-        <div class="w-6 h-6 rounded-lg bg-violet-50 dark:bg-violet-900/30 flex items-center justify-center">
-          <svg class="w-3.5 h-3.5 text-violet-600 dark:text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-        </div>
-      </div>
-      <div class="text-xl font-bold tabular-nums text-violet-600 dark:text-violet-400" id="kLatency">—</div>
-      <canvas id="sparkLatency" class="mt-2 w-full" height="26"></canvas>
-    </div>
-    <!-- Error Rate -->
-    <div class="kpi-card fade-up d5 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-4 shadow-sm">
-      <div class="flex items-start justify-between mb-2">
-        <span class="text-xs font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wide">Errors</span>
-        <div class="w-6 h-6 rounded-lg bg-amber-50 dark:bg-amber-900/30 flex items-center justify-center">
-          <svg class="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-        </div>
-      </div>
-      <div class="text-xl font-bold tabular-nums text-amber-500 dark:text-amber-400" id="kErrorRate">—</div>
-      <canvas id="sparkError" class="mt-2 w-full" height="26"></canvas>
-    </div>
-    <!-- Clients -->
-    <div class="kpi-card fade-up d6 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-4 shadow-sm">
-      <div class="flex items-start justify-between mb-2">
-        <span class="text-xs font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wide">Clients</span>
-        <div class="w-6 h-6 rounded-lg bg-cyan-50 dark:bg-cyan-900/30 flex items-center justify-center">
-          <svg class="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-        </div>
-      </div>
-      <div class="text-xl font-bold tabular-nums text-cyan-600 dark:text-cyan-400" id="kClients">—</div>
-      <canvas id="sparkClients" class="mt-2 w-full" height="26"></canvas>
-    </div>
-    <!-- Block Rate -->
-    <div class="kpi-card fade-up d7 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-4 shadow-sm">
-      <div class="flex items-start justify-between mb-2">
-        <span class="text-xs font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wide">Block %</span>
-        <div class="w-6 h-6 rounded-lg bg-pink-50 dark:bg-pink-900/30 flex items-center justify-center">
-          <svg class="w-3.5 h-3.5 text-pink-500 dark:text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-        </div>
-      </div>
-      <div class="text-xl font-bold tabular-nums text-pink-500 dark:text-pink-400" id="kBlockRate">—</div>
-      <canvas id="sparkBlockRate" class="mt-2 w-full" height="26"></canvas>
-    </div>
-    <!-- High Risk -->
-    <div class="kpi-card fade-up d8 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-4 shadow-sm">
-      <div class="flex items-start justify-between mb-2">
-        <span class="text-xs font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wide">High Risk</span>
-        <div class="w-6 h-6 rounded-lg bg-orange-50 dark:bg-orange-900/30 flex items-center justify-center">
-          <svg class="w-3.5 h-3.5 text-orange-500 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
-        </div>
-      </div>
-      <div class="text-xl font-bold tabular-nums text-orange-500 dark:text-orange-400" id="kRisky">—</div>
-      <canvas id="sparkRisky" class="mt-2 w-full" height="26"></canvas>
-    </div>
-  </div>
+  <main id="dashboard-main-panel" class="max-w-[1700px] mx-auto px-4 lg:px-8 py-6 lg:py-8 space-y-6">
+    <div id="toastHost" aria-live="polite" class="fixed top-20 right-4 z-[70] min-w-[220px] max-w-[320px]"></div>
+    <div id="dashboard-time-panel" role="tabpanel" aria-labelledby="time-pill-1h" class="space-y-6">
 
-  <!-- MAIN ANALYTICS -->
-  <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 mb-4">
-    <!-- Traffic Overview -->
-    <div class="fade-up bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-5 shadow-sm">
-      <div class="flex items-center justify-between mb-4">
+    <section class="surface rounded-3xl p-5 lg:p-7 fade-up">
+      <div class="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h2 class="text-sm font-semibold text-slate-800 dark:text-slate-200">Traffic Overview</h2>
-          <p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">Requests vs Blocked over time</p>
-        </div>
-        <div class="flex items-center gap-3 text-xs">
-          <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block"></span><span class="text-slate-400">Requests</span></span>
-          <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block"></span><span class="text-slate-400">Blocked</span></span>
-        </div>
-      </div>
-      <div class="relative h-48"><canvas id="trafficChart"></canvas></div>
-    </div>
-    <!-- Status + Algo stacked -->
-    <div class="flex flex-col gap-4">
-      <div class="fade-up bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-5 shadow-sm">
-        <div class="mb-3">
-          <h2 class="text-sm font-semibold text-slate-800 dark:text-slate-200">HTTP Status Distribution</h2>
-          <p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">Response code breakdown</p>
-        </div>
-        <div class="flex items-center gap-5">
-          <div class="relative h-32 w-32 shrink-0"><canvas id="statusChart"></canvas></div>
-          <div id="statusLegend" class="flex flex-col gap-1.5 text-xs flex-1"></div>
-        </div>
-      </div>
-      <div class="fade-up bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-5 shadow-sm">
-        <div class="mb-3">
-          <h2 class="text-sm font-semibold text-slate-800 dark:text-slate-200">Blocks by Algorithm</h2>
-          <p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">Rate-limiter distribution</p>
-        </div>
-        <div class="relative h-24"><canvas id="algoChart"></canvas></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- LATENCY + STATUS TRENDS -->
-  <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 mb-4">
-    <div class="fade-up bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-5 shadow-sm">
-      <div class="flex items-center justify-between mb-4">
-        <div>
-          <h2 class="text-sm font-semibold text-slate-800 dark:text-slate-200">Latency Trend</h2>
-          <p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">Average response time (ms)</p>
-        </div>
-        <span class="flex items-center gap-1.5 text-xs"><span class="w-2.5 h-2.5 rounded-full bg-violet-500 inline-block"></span><span class="text-slate-400">Avg ms</span></span>
-      </div>
-      <div class="relative h-36"><canvas id="latencyTrendChart"></canvas></div>
-    </div>
-    <div class="fade-up bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-5 shadow-sm">
-      <div class="flex items-center justify-between mb-4">
-        <div>
-          <h2 class="text-sm font-semibold text-slate-800 dark:text-slate-200">Status Code Trends</h2>
-          <p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">HTTP response code over time</p>
-        </div>
-        <div class="flex items-center gap-2 text-xs">
-          <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span><span class="text-slate-400">2xx</span></span>
-          <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-amber-500 inline-block"></span><span class="text-slate-400">403</span></span>
-          <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-rose-500 inline-block"></span><span class="text-slate-400">429</span></span>
-          <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-violet-500 inline-block"></span><span class="text-slate-400">5xx</span></span>
-        </div>
-      </div>
-      <div class="relative h-36"><canvas id="statusTrendChart"></canvas></div>
-    </div>
-  </div>
-
-  <!-- RISK INTELLIGENCE + CLIENT PANEL -->
-  <div class="grid grid-cols-1 xl:grid-cols-5 gap-4 mb-4">
-    <!-- Risk Table -->
-    <div class="xl:col-span-3 fade-up bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
-      <div class="p-5 border-b border-slate-100 dark:border-slate-700">
-        <div class="flex items-center justify-between">
-          <div>
-            <h2 class="text-sm font-semibold text-slate-800 dark:text-slate-200">Risk Intelligence</h2>
-            <p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">High-risk clients sorted by threat score</p>
+          <p class="text-[11px] uppercase tracking-[.2em] text-slate-500">Executive overview</p>
+          <h1 class="text-3xl lg:text-4xl font-bold tracking-tight text-slate-900">Gateway Intelligence</h1>
+          <p class="mt-1 text-sm text-slate-500">Real-time observability, anomaly detection, and traffic intelligence</p>
+          <div class="mt-3 flex flex-wrap items-center gap-3 text-xs">
+            <span id="lastUpdated" class="text-slate-500">Updated just now</span>
+            <span class="inline-flex items-center gap-1.5 text-emerald-600"><span class="w-2 h-2 rounded-full bg-emerald-500 pulse-dot"></span>Live status</span>
+            <span id="incidentCount" class="badge bg-rose-50 text-rose-600">0 active incidents</span>
           </div>
-          <select id="riskFilter" class="text-xs bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-2 py-1.5 text-slate-600 dark:text-slate-300 cursor-pointer">
-            <option value="">All</option>
-            <option value="high">High (&ge;70)</option>
-            <option value="medium">Medium (40-69)</option>
-            <option value="low">Low (&lt;40)</option>
+        </div>
+
+        <div class="flex flex-wrap gap-2 items-center">
+          <div class="glass rounded-2xl p-1 inline-flex" role="tablist" aria-label="time range">
+            <button id="time-pill-15m" class="time-pill px-3 py-1.5 text-xs font-medium rounded-xl" data-minutes="15" role="tab" aria-label="15 minutes" aria-controls="dashboard-time-panel" aria-selected="false">15m</button>
+            <button id="time-pill-1h" class="time-pill px-3 py-1.5 text-xs font-medium rounded-xl bg-white shadow-sm" data-minutes="60" role="tab" aria-label="1 hour" aria-controls="dashboard-time-panel" aria-selected="true">1h</button>
+            <button id="time-pill-24h" class="time-pill px-3 py-1.5 text-xs font-medium rounded-xl" data-minutes="1440" role="tab" aria-label="24 hours" aria-controls="dashboard-time-panel" aria-selected="false">24h</button>
+            <button id="time-pill-7d" class="time-pill px-3 py-1.5 text-xs font-medium rounded-xl" data-minutes="10080" role="tab" aria-label="7 days" aria-controls="dashboard-time-panel" aria-selected="false">7d</button>
+            <button id="time-pill-30d" class="time-pill px-3 py-1.5 text-xs font-medium rounded-xl" data-minutes="43200" role="tab" aria-label="30 days" aria-controls="dashboard-time-panel" aria-selected="false">30d</button>
+          </div>
+          <button id="refreshBtn" class="ghost-btn rounded-xl px-3 py-2 text-xs font-medium">Refresh</button>
+          <button class="rounded-xl px-3 py-2 text-xs font-medium bg-blue-600 hover:bg-blue-700 text-white">Create Alert</button>
+          <button id="exportQuickAction" class="ghost-btn rounded-xl px-3 py-2 text-xs font-medium">Export Report</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="kpiGrid" aria-live="polite" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-8 gap-3"></section>
+
+    <section class="grid grid-cols-1 xl:grid-cols-12 gap-4">
+      <article class="xl:col-span-7 surface rounded-3xl p-5 lg:p-6 fade-up">
+        <div class="flex flex-wrap justify-between gap-3 mb-4">
+          <div>
+            <p class="text-[11px] uppercase tracking-[.16em] text-slate-400">Traffic intelligence</p>
+            <h2 class="panel-title">Requests vs Blocked</h2>
+            <p class="panel-subtitle">Current period against historical baseline</p>
+          </div>
+          <div class="glass rounded-xl p-1 inline-flex text-xs" id="compareToggle">
+            <button class="cmp-btn rounded-lg px-2.5 py-1 bg-white" data-mode="current">Current</button>
+            <button class="cmp-btn rounded-lg px-2.5 py-1" data-mode="previous">Previous</button>
+          </div>
+        </div>
+        <div class="h-72"><canvas id="trafficChart"></canvas></div>
+      </article>
+
+      <div class="xl:col-span-5 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-1 gap-4">
+        <article class="surface rounded-3xl p-5 fade-up">
+          <div class="mb-3">
+            <h3 class="panel-title">HTTP status code mix</h3>
+            <p class="panel-subtitle">Donut with weighted distribution</p>
+          </div>
+          <div class="flex items-center gap-4">
+            <div class="w-32 h-32"><canvas id="statusChart"></canvas></div>
+            <div id="statusLegend" class="text-xs flex-1 space-y-1"></div>
+          </div>
+        </article>
+
+        <article class="surface rounded-3xl p-5 fade-up">
+          <div class="mb-3">
+            <h3 class="panel-title">Latency heatmap</h3>
+            <p class="panel-subtitle">Hour-by-hour latency gradient</p>
+          </div>
+          <div id="latencyHeatmap" class="grid grid-cols-6 gap-1.5"></div>
+        </article>
+
+        <article class="surface rounded-3xl p-5 fade-up">
+          <div class="mb-3">
+            <h3 class="panel-title">Geographic threat map</h3>
+            <p class="panel-subtitle">Regional suspicious concentration</p>
+          </div>
+          <div class="rounded-2xl p-3 bg-slate-50 border border-slate-200">
+            <svg viewBox="0 0 800 360" class="w-full h-32" role="img" aria-labelledby="geoMapTitle" aria-describedby="geoMeta">
+              <title id="geoMapTitle">Geographic distribution of security threats</title>
+              <rect x="0" y="0" width="800" height="360" fill="transparent"></rect>
+              <ellipse cx="150" cy="170" rx="100" ry="70" fill="rgba(59,130,246,.15)"></ellipse>
+              <ellipse cx="360" cy="150" rx="130" ry="80" fill="rgba(236,72,153,.18)"></ellipse>
+              <ellipse cx="620" cy="160" rx="120" ry="85" fill="rgba(16,185,129,.16)"></ellipse>
+              <circle cx="365" cy="160" r="14" fill="rgba(244,63,94,.85)"></circle>
+              <circle cx="525" cy="170" r="10" fill="rgba(245,158,11,.85)"></circle>
+              <circle cx="210" cy="145" r="9" fill="rgba(59,130,246,.88)"></circle>
+            </svg>
+          </div>
+          <div id="geoMeta" class="mt-2 text-xs text-slate-500">Threat hotspots: loading…</div>
+        </article>
+
+        <article class="surface rounded-3xl p-5 fade-up">
+          <div class="mb-3">
+            <h3 class="panel-title">Traffic source distribution</h3>
+            <p class="panel-subtitle">By decision and algorithm class</p>
+          </div>
+          <div class="h-40"><canvas id="sourceChart"></canvas></div>
+        </article>
+      </div>
+    </section>
+
+    <section class="grid grid-cols-1 xl:grid-cols-12 gap-4">
+      <article class="xl:col-span-8 surface rounded-3xl overflow-hidden fade-up">
+        <div class="px-5 pt-5 pb-4 border-b border-slate-200/60 flex flex-wrap justify-between gap-3">
+          <div>
+            <p class="text-[11px] uppercase tracking-[.16em] text-slate-400">Advanced risk intelligence</p>
+            <h2 class="panel-title">High-risk clients</h2>
+            <p class="panel-subtitle">Threat score, confidence, block rate, region signal and key health</p>
+          </div>
+          <select id="riskFilter" class="ghost-btn rounded-xl px-3 py-2 text-xs">
+            <option value="">All severities</option>
+            <option value="high">High</option>
+            <option value="medium">Medium</option>
+            <option value="low">Low</option>
           </select>
         </div>
-      </div>
-      <div class="overflow-auto max-h-72">
-        <table class="w-full text-xs">
-          <thead>
-            <tr class="text-left text-slate-400 dark:text-slate-500 border-b border-slate-100 dark:border-slate-700">
-              <th class="px-4 py-3 font-medium">Client / API Key</th>
-              <th class="px-4 py-3 font-medium">Risk</th>
-              <th class="px-4 py-3 font-medium">Block Rate</th>
-              <th class="px-4 py-3 font-medium">Requests</th>
-              <th class="px-4 py-3 font-medium">Level</th>
-            </tr>
-          </thead>
-          <tbody id="riskTableBody">
-            <tr><td colspan="5" class="px-4 py-8 text-center text-slate-400 dark:text-slate-500">Loading…</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-    <!-- Client Panel -->
-    <div class="xl:col-span-2 fade-up bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
-      <div class="p-5 border-b border-slate-100 dark:border-slate-700">
-        <h2 class="text-sm font-semibold text-slate-800 dark:text-slate-200">Client Intelligence</h2>
-        <p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5" id="clientPanelSub">Select a client from the table</p>
-      </div>
-      <div class="p-5">
-        <div id="clientEmptyState" class="flex flex-col items-center justify-center py-8 text-center">
-          <div class="w-10 h-10 rounded-2xl bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center mb-3">
-            <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-          </div>
-          <p class="text-sm font-medium text-slate-600 dark:text-slate-400">No client selected</p>
-          <p class="text-xs text-slate-400 dark:text-slate-500 mt-1 max-w-[200px]">Click a row in the Risk Intelligence table to view details</p>
+        <div class="overflow-auto max-h-[420px]">
+          <table class="w-full text-xs">
+            <thead class="sticky top-0 bg-white/95 backdrop-blur z-10 border-b border-slate-200">
+              <tr class="text-slate-500">
+                <th class="px-4 py-3 text-left">Client</th>
+                <th class="px-4 py-3 text-left">Severity</th>
+                <th class="px-4 py-3 text-left">Threat score</th>
+                <th class="px-4 py-3 text-left">Block rate</th>
+                <th class="px-4 py-3 text-left">Requests</th>
+                <th class="px-4 py-3 text-left">Region</th>
+                <th class="px-4 py-3 text-left">Key health</th>
+                <th class="px-4 py-3 text-left">Confidence</th>
+                <th class="px-4 py-3 text-left">Action</th>
+              </tr>
+            </thead>
+            <tbody id="riskTableBody"></tbody>
+          </table>
         </div>
-        <div id="clientDetailsPanel" class="hidden">
-          <div class="flex items-center gap-3 mb-4">
-            <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center text-white font-bold text-sm shrink-0" id="clientAvatar">?</div>
+      </article>
+
+      <article class="xl:col-span-4 surface rounded-3xl p-5 fade-up">
+        <div class="flex items-start justify-between gap-2 mb-4">
+          <div>
+            <h3 class="panel-title">Client intelligence panel</h3>
+            <p id="clientPanelSub" class="panel-subtitle">Select a client to inspect behavior</p>
+          </div>
+          <span id="clientRiskPill" class="badge bg-slate-100 text-slate-600">Not selected</span>
+        </div>
+
+        <div id="clientEmptyState" class="rounded-2xl border border-dashed border-slate-300 p-6 text-center">
+          <p class="text-sm font-medium text-slate-600">No client selected</p>
+          <p class="mt-1 text-xs text-slate-500">Choose a row from High-risk clients to view traffic trend, anomalies, and API key posture.</p>
+        </div>
+
+        <div id="clientDetailsPanel" class="hidden space-y-4">
+          <div class="flex items-center gap-3">
+            <div id="clientAvatar" class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-violet-600 text-white font-semibold flex items-center justify-center">?</div>
             <div class="min-w-0">
-              <div class="text-sm font-semibold text-slate-800 dark:text-slate-200 font-mono truncate" id="clientName">—</div>
-              <div class="text-xs text-slate-400 dark:text-slate-500" id="clientMeta">—</div>
+              <p id="clientName" class="font-semibold truncate">—</p>
+              <p id="clientMeta" class="text-xs text-slate-500">—</p>
             </div>
           </div>
-          <div class="grid grid-cols-2 gap-2 mb-4">
-            <div class="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-3">
-              <div class="text-xs text-slate-400 dark:text-slate-500 mb-1">Total Requests</div>
-              <div class="text-base font-bold tabular-nums text-slate-800 dark:text-slate-200" id="cdTotal">—</div>
-            </div>
-            <div class="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-3">
-              <div class="text-xs text-slate-400 dark:text-slate-500 mb-1">Block Rate</div>
-              <div class="text-base font-bold tabular-nums text-rose-500" id="cdBlockRate">—</div>
-            </div>
-            <div class="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-3">
-              <div class="text-xs text-slate-400 dark:text-slate-500 mb-1">Risk Score</div>
-              <div class="text-base font-bold tabular-nums text-orange-500" id="cdRisk">—</div>
-            </div>
-            <div class="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-3">
-              <div class="text-xs text-slate-400 dark:text-slate-500 mb-1">Avg Latency</div>
-              <div class="text-base font-bold tabular-nums text-violet-500" id="cdLatency">—</div>
-            </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div class="rounded-2xl p-3 bg-slate-50 border border-slate-200"><p class="text-[11px] text-slate-500 uppercase">Requests</p><p id="cdTotal" class="font-bold tabular-nums">—</p></div>
+            <div class="rounded-2xl p-3 bg-slate-50 border border-slate-200"><p class="text-[11px] text-slate-500 uppercase">Block rate</p><p id="cdBlockRate" class="font-bold tabular-nums text-rose-500">—</p></div>
+            <div class="rounded-2xl p-3 bg-slate-50 border border-slate-200"><p class="text-[11px] text-slate-500 uppercase">Risk score</p><p id="cdRisk" class="font-bold tabular-nums text-orange-500">—</p></div>
+            <div class="rounded-2xl p-3 bg-slate-50 border border-slate-200"><p class="text-[11px] text-slate-500 uppercase">Avg latency</p><p id="cdLatency" class="font-bold tabular-nums text-violet-500">—</p></div>
           </div>
-          <div class="mb-3">
-            <div class="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">Traffic (window)</div>
-            <div class="h-24 relative"><canvas id="clientTrafficChart"></canvas></div>
+
+          <div>
+            <p class="text-xs text-slate-500 mb-1">Traffic trend</p>
+            <div class="h-24"><canvas id="clientTrafficChart"></canvas></div>
           </div>
-          <div class="mb-3">
-            <div class="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">Status Codes</div>
+          <div>
+            <p class="text-xs text-slate-500 mb-1">Status code profile</p>
             <div id="cdStatusCodes" class="flex flex-wrap gap-1.5"></div>
           </div>
-          <details>
-            <summary class="text-xs text-slate-400 dark:text-slate-500 cursor-pointer hover:text-slate-600 dark:hover:text-slate-300">Raw JSON</summary>
-            <pre id="clientRaw" class="mt-2 text-xs bg-slate-50 dark:bg-slate-900 rounded-lg p-3 overflow-auto max-h-36 font-mono text-slate-600 dark:text-slate-400 border border-slate-100 dark:border-slate-700"></pre>
-          </details>
+          <div>
+            <p class="text-xs text-slate-500 mb-1">Recent anomalies timeline</p>
+            <div id="clientAnomalies" class="space-y-2 text-xs"></div>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <section class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+      <article class="surface rounded-3xl p-5"><h3 class="panel-title mb-1">Latency percentile (P50 / P90 / P99)</h3><p class="panel-subtitle mb-3">Derived from observed latency baseline</p><div class="h-44"><canvas id="percentileChart"></canvas></div></article>
+      <article class="surface rounded-3xl p-5"><h3 class="panel-title mb-1">Request category stack</h3><p class="panel-subtitle mb-3">Successful, blocked, and error traffic mix</p><div class="h-44"><canvas id="stackedChart"></canvas></div></article>
+      <article class="surface rounded-3xl p-5"><h3 class="panel-title mb-1">API key usage trend</h3><p class="panel-subtitle mb-3">Top tenant key volume trend</p><div class="h-44"><canvas id="apiUsageChart"></canvas></div></article>
+      <article class="surface rounded-3xl p-5"><h3 class="panel-title mb-1">Top blocked endpoints</h3><p class="panel-subtitle mb-3">Highest blocked path concentration</p><div class="h-44"><canvas id="blockedEndpointsChart"></canvas></div></article>
+      <article class="surface rounded-3xl p-5"><h3 class="panel-title mb-1">Decision breakdown</h3><p class="panel-subtitle mb-3">Allow vs block ratios and warning states</p><div class="h-44"><canvas id="decisionChart"></canvas></div></article>
+      <article class="surface rounded-3xl p-5"><h3 class="panel-title mb-1">Risk scoring radar</h3><p class="panel-subtitle mb-3">Composite threat category posture</p><div class="h-44"><canvas id="riskRadarChart"></canvas></div></article>
+    </section>
+
+    <section class="surface rounded-3xl overflow-hidden fade-up">
+      <div class="p-5 border-b border-slate-200/60">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+          <div>
+            <h2 class="text-base font-semibold">Live incident feed</h2>
+            <p id="eventMeta" class="text-xs text-slate-500">Loading…</p>
+          </div>
+          <button id="exportFilteredEventsCsv" class="ghost-btn rounded-xl px-3 py-2 text-xs font-medium">Export filtered CSV</button>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 xl:grid-cols-10 gap-2">
+          <input id="fTenant" placeholder="Tenant" class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs">
+          <input id="fApp" placeholder="App" class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs">
+          <input id="fClient" placeholder="API key" class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs">
+          <input id="fIp" placeholder="IP" class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs">
+          <input id="fStatus" placeholder="HTTP status" class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs">
+          <input id="fAlgorithm" placeholder="Decision type" class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs">
+          <input id="fEndpoint" placeholder="Endpoint" class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs">
+          <input id="fRegion" placeholder="Region" class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs">
+          <input id="fSeverity" placeholder="Severity" class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs">
+          <div class="flex gap-2">
+            <button id="applyEventFilters" class="rounded-xl bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 text-xs font-medium flex-1">Apply</button>
+            <button id="clearEventFilters" class="ghost-btn rounded-xl px-3 py-2 text-xs font-medium flex-1">Clear</button>
+          </div>
         </div>
       </div>
-    </div>
-  </div>
+      <div class="overflow-auto max-h-[360px]">
+        <table class="w-full text-xs">
+          <thead class="sticky top-0 bg-white border-b border-slate-200 z-10">
+            <tr class="text-left text-slate-500">
+              <th class="px-4 py-3">Time</th>
+              <th class="px-4 py-3">Type</th>
+              <th class="px-4 py-3">Severity</th>
+              <th class="px-4 py-3">Tenant / App</th>
+              <th class="px-4 py-3">Client</th>
+              <th class="px-4 py-3">IP</th>
+              <th class="px-4 py-3">Status</th>
+              <th class="px-4 py-3">Decision</th>
+              <th class="px-4 py-3">Latency</th>
+              <th class="px-4 py-3">Endpoint</th>
+            </tr>
+          </thead>
+          <tbody id="eventTableBody"></tbody>
+        </table>
+      </div>
+    </section>
 
-  <!-- TOP CLIENTS TABLE -->
-  <div class="fade-up bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm mb-4">
-    <div class="p-5 border-b border-slate-100 dark:border-slate-700">
-      <h2 class="text-sm font-semibold text-slate-800 dark:text-slate-200">Top Clients by Volume</h2>
-      <p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">Request share breakdown per client</p>
-    </div>
-    <div class="overflow-auto max-h-56">
-      <table class="w-full text-xs">
-        <thead>
-          <tr class="text-left text-slate-400 dark:text-slate-500 border-b border-slate-100 dark:border-slate-700">
-            <th class="px-4 py-3 font-medium w-8">#</th>
-            <th class="px-4 py-3 font-medium">Client / API Key</th>
-            <th class="px-4 py-3 font-medium">Requests</th>
-            <th class="px-4 py-3 font-medium">Share</th>
-          </tr>
-        </thead>
-        <tbody id="clientTableBody">
-          <tr><td colspan="4" class="px-4 py-8 text-center text-slate-400 dark:text-slate-500">Loading…</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- LIVE EVENT FEED -->
-  <div class="fade-up bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm mb-4">
-    <div class="p-5 border-b border-slate-100 dark:border-slate-700">
-      <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+    <section class="surface rounded-3xl p-5 fade-up">
+      <div class="flex flex-wrap justify-between gap-3 items-center mb-3">
         <div>
-          <h2 class="text-sm font-semibold text-slate-800 dark:text-slate-200">Live Event Feed</h2>
-          <p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5" id="eventMeta">Loading…</p>
+          <h2 class="font-semibold">Runtime configuration</h2>
+          <p class="text-xs text-slate-500">Download and apply runtime rate-limit policy JSON</p>
         </div>
-        <button id="exportFilteredEventsCsv" class="btn-s text-xs font-medium px-3 py-1.5 rounded-lg flex items-center gap-1.5 cursor-pointer">
-          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
-          Export CSV
-        </button>
-      </div>
-      <div class="grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-8 gap-2">
-        <input id="fTenant"    placeholder="Tenant"         class="text-xs bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-1.5 text-slate-700 dark:text-slate-200 placeholder-slate-400" />
-        <input id="fApp"       placeholder="App"            class="text-xs bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-1.5 text-slate-700 dark:text-slate-200 placeholder-slate-400" />
-        <input id="fClient"    placeholder="Client/API Key" class="text-xs bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-1.5 text-slate-700 dark:text-slate-200 placeholder-slate-400" />
-        <input id="fIp"        placeholder="IP address"     class="text-xs bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-1.5 text-slate-700 dark:text-slate-200 placeholder-slate-400" />
-        <input id="fStatus"    placeholder="Status (e.g. 429)" class="text-xs bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-1.5 text-slate-700 dark:text-slate-200 placeholder-slate-400" />
-        <input id="fAlgorithm" placeholder="Algorithm"      class="text-xs bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-1.5 text-slate-700 dark:text-slate-200 placeholder-slate-400" />
-        <input id="fLimit"     placeholder="Limit (100)"    class="text-xs bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-1.5 text-slate-700 dark:text-slate-200 placeholder-slate-400" />
         <div class="flex gap-2">
-          <button id="applyEventFilters" class="btn-p text-xs font-medium px-3 py-1.5 rounded-lg flex-1 cursor-pointer">Apply</button>
-          <button id="clearEventFilters" class="btn-s text-xs font-medium px-3 py-1.5 rounded-lg flex-1 cursor-pointer">Clear</button>
+          <button id="downloadConfigBtn" class="ghost-btn rounded-xl px-3 py-2 text-xs">Download config</button>
+          <button id="applyConfig" class="rounded-xl bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 text-xs font-medium">Apply config</button>
         </div>
       </div>
-    </div>
-    <div class="overflow-auto max-h-72">
-      <table class="w-full text-xs">
-        <thead class="sticky top-0 bg-white dark:bg-slate-800 z-10">
-          <tr class="text-left text-slate-400 dark:text-slate-500 border-b border-slate-100 dark:border-slate-700">
-            <th class="px-4 py-3 font-medium whitespace-nowrap">Time</th>
-            <th class="px-4 py-3 font-medium">Decision</th>
-            <th class="px-4 py-3 font-medium whitespace-nowrap">Tenant / App</th>
-            <th class="px-4 py-3 font-medium">Client</th>
-            <th class="px-4 py-3 font-medium">IP</th>
-            <th class="px-4 py-3 font-medium">Status</th>
-            <th class="px-4 py-3 font-medium">Algorithm</th>
-            <th class="px-4 py-3 font-medium">Latency</th>
-            <th class="px-4 py-3 font-medium">Path</th>
-          </tr>
-        </thead>
-        <tbody id="eventTableBody">
-          <tr><td colspan="9" class="px-4 py-8 text-center text-slate-400 dark:text-slate-500">Loading events…</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
+      <textarea id="configJson" rows="8" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-3 py-3 text-xs font-mono"></textarea>
+    </section>
 
-  <!-- RUNTIME CONFIG -->
-  <div class="fade-up bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm mb-6">
-    <div class="p-5 border-b border-slate-100 dark:border-slate-700">
-      <div class="flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <h2 class="text-sm font-semibold text-slate-800 dark:text-slate-200">Runtime Configuration</h2>
-          <p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">View, download, and apply rate-limit configuration</p>
-        </div>
-        <div class="flex items-center gap-2">
-          <button id="downloadConfig" class="btn-s text-xs font-medium px-3 py-1.5 rounded-lg flex items-center gap-1.5 cursor-pointer">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-            Download
-          </button>
-          <button id="applyConfig" class="btn-p text-xs font-medium px-3 py-1.5 rounded-lg flex items-center gap-1.5 cursor-pointer">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-            Apply Config
-          </button>
-        </div>
-      </div>
+    <footer class="text-center text-xs text-slate-500 pb-2">Gateway Intelligence · Auto-refresh every <span id="refreshLabel">10s</span></footer>
     </div>
-    <div class="p-5">
-      <textarea id="configJson" rows="10" class="w-full text-xs font-mono bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-4 text-slate-700 dark:text-slate-300 resize-y" placeholder="Config JSON will appear here…"></textarea>
-    </div>
-  </div>
-
-  <div class="text-center text-xs text-slate-400 dark:text-slate-600 pb-4">
-    Gateway Intelligence &middot; Auto-refresh every <span id="refreshLabel">10s</span>
-  </div>
-</main>
+  </main>
 
 <script>
-  // ============================================================
-  // CONFIG
-  // ============================================================
   const REFRESH_MS = Number(new URLSearchParams(window.location.search).get("refreshMs")) || 10000;
   document.getElementById("refreshLabel").textContent = (REFRESH_MS / 1000).toFixed(0) + "s";
 
   const $ = (id) => document.getElementById(id);
-  const fmt = (x) => JSON.stringify(x, null, 2);
-  const fmtTs = (ts) => new Date(ts).toISOString();
-  function relTime(ts) {
-    const d = Math.floor((Date.now() - new Date(ts).getTime()) / 1000);
-    if (d < 60) return d + "s ago";
-    if (d < 3600) return Math.floor(d/60) + "m ago";
-    return Math.floor(d/3600) + "h ago";
-  }
-
-  // ============================================================
-  // THEME
-  // ============================================================
-  const html = document.documentElement;
-  function setTheme(dark) {
-    if (dark) { html.classList.add("dark"); $("iconSun").classList.add("hidden"); $("iconMoon").classList.remove("hidden"); }
-    else { html.classList.remove("dark"); $("iconSun").classList.remove("hidden"); $("iconMoon").classList.add("hidden"); }
-  }
-  setTheme(localStorage.getItem("gwTheme") === "dark");
-  $("themeToggle").onclick = () => {
-    const d = !html.classList.contains("dark");
-    setTheme(d);
-    localStorage.setItem("gwTheme", d ? "dark" : "light");
-  };
-
-  // ============================================================
-  // CHART UTILITIES
-  // ============================================================
   const charts = {};
-  const sparks = {};
+  let dashboard = null;
+  let selectedClient = null;
+  let compareMode = 'current';
+  let unreadNotifications = 3;
+  // Composite confidence scoring constants:
+  // finalScore = clamp(CONFIDENCE_BASELINE..CONFIDENCE_MAX, riskScore*CONFIDENCE_RISK_WEIGHT + min(CONFIDENCE_VOLUME_CAP, log10(requests+1)*CONFIDENCE_VOLUME_SCALE)).
+  const CONFIDENCE_BASELINE = 45;
+  const CONFIDENCE_MAX = 99;
+  const CONFIDENCE_RISK_WEIGHT = 0.72;
+  const CONFIDENCE_VOLUME_CAP = 28;
+  const CONFIDENCE_VOLUME_SCALE = 12;
 
-  const TOOLTIP = {
-    backgroundColor: "rgba(15,23,42,0.88)",
-    titleColor: "#e2e8f0",
-    bodyColor: "#94a3b8",
-    borderColor: "rgba(255,255,255,0.08)",
-    borderWidth: 1,
-    padding: 10,
-    cornerRadius: 8
-  };
-
-  const BASE_OPTS = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: { legend: { display: false }, tooltip: TOOLTIP },
-    scales: {
-      x: { grid: { color: "rgba(148,163,184,0.08)", drawBorder: false }, ticks: { color: "#94a3b8", font: { size: 10 }, maxTicksLimit: 7 }, border: { display: false } },
-      y: { grid: { color: "rgba(148,163,184,0.08)", drawBorder: false }, ticks: { color: "#94a3b8", font: { size: 10 } }, border: { display: false } }
-    },
-    elements: { point: { radius: 0, hoverRadius: 4 }, line: { tension: 0.35 } },
-    animation: { duration: 450 }
-  };
-
-  function upsert(id, type, data, extra = {}) {
-    if (charts[id]) charts[id].destroy();
-    let opts;
-    if (type === "doughnut") {
-      opts = { responsive:true, maintainAspectRatio:false, cutout:"68%", plugins:{ legend:{display:false}, tooltip:TOOLTIP }, animation:{duration:450} };
-    } else if (type === "bar") {
-      opts = { responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:TOOLTIP }, animation:{duration:450},
-               scales:{ x:BASE_OPTS.scales.x, y:BASE_OPTS.scales.y }, elements:{ bar:{borderRadius:4,borderSkipped:false} } };
-    } else {
-      opts = JSON.parse(JSON.stringify(BASE_OPTS));
-    }
-    // merge extra into opts shallowly
-    Object.keys(extra).forEach(k => { if (typeof extra[k] === "object" && extra[k] !== null && !Array.isArray(extra[k])) opts[k] = Object.assign({}, opts[k]||{}, extra[k]); else opts[k] = extra[k]; });
-    charts[id] = new Chart($(id), { type, data, options: opts });
+  function syncNotificationAccessibility() {
+    unreadNotifications = Number(unreadNotifications || 0);
+    $('notifBadge').textContent = String(Math.min(99, unreadNotifications));
+    $('notificationsBtn')?.setAttribute('aria-label', `${unreadNotifications} unread notifications`);
   }
 
-  function spark(id, pts, color) {
-    if (sparks[id]) sparks[id].destroy();
-    sparks[id] = new Chart($(id), {
-      type: "line",
-      data: { labels: pts.map((_,i)=>i), datasets:[{ data:pts, borderColor:color, backgroundColor:color+"22", fill:true, tension:0.4, borderWidth:1.5, pointRadius:0 }] },
-      options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{enabled:false} }, scales:{ x:{display:false}, y:{display:false} }, animation:{duration:500} }
+  const KPI_CONFIG = [
+    { id:'total', title:'Total Requests', color:'#3b82f6', icon:'↗', value:0, context:'Total API calls in selected window' },
+    { id:'success', title:'Successful Requests', color:'#10b981', icon:'✓', value:0, context:'Delivered with 2xx status' },
+    { id:'blocked', title:'Blocked Requests', color:'#f43f5e', icon:'⛔', value:0, context:'Blocked by policy and filters' },
+    { id:'latency', title:'Avg Latency', color:'#8b5cf6', icon:'⏱', value:0, suffix:' ms', context:'Rolling mean latency' },
+    { id:'error', title:'Error Rate', color:'#f59e0b', icon:'!', value:0, suffix:'%', context:'5xx errors over total requests' },
+    { id:'clients', title:'Active Clients', color:'#06b6d4', icon:'👥', value:0, context:'Unique API keys in window' },
+    { id:'suspicious', title:'Suspicious Sessions', color:'#ec4899', icon:'⚠', value:0, context:'High-risk or blocked bursts' },
+    { id:'peak', title:'Peak Traffic', color:'#f97316', icon:'◎', value:0, context:'Max requests per minute' }
+  ];
+
+  function fmtNum(value, suffix='') {
+    if (suffix === '%') return Number(value).toFixed(1) + suffix;
+    if (suffix.trim() === 'ms') return Number(value).toFixed(2) + suffix;
+    return Number(value).toLocaleString() + suffix;
+  }
+
+  function escHtml(v) {
+    return String(v ?? '')
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#39;');
+  }
+
+  function animateNumber(el, from, to, formatter) {
+    const start = performance.now();
+    const dur = 500;
+    function tick(ts) {
+      const p = Math.min(1, (ts - start) / dur);
+      const v = from + (to - from) * (1 - Math.pow(1 - p, 3));
+      el.textContent = formatter(v);
+      if (p < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
+
+  function skeletonRows(cols, rows = 5) {
+    return Array.from({ length: rows }).map(() =>
+      `<tr class="border-b border-slate-100">${Array.from({ length: cols }).map(() =>
+        '<td class="px-4 py-3"><div class="h-3 rounded-lg skeleton"></div></td>'
+      ).join('')}</tr>`
+    ).join('');
+  }
+
+  function setLoadingState() {
+    $('dashboard-main-panel').setAttribute('aria-busy', 'true');
+    $('kpiGrid').innerHTML = Array.from({ length: 8 }).map(() =>
+      '<article class="surface rounded-3xl p-4"><div class="h-3 w-24 rounded-lg skeleton mb-3"></div><div class="h-7 w-20 rounded-lg skeleton mb-2"></div><div class="h-2 rounded-lg skeleton"></div></article>'
+    ).join('');
+    $('riskTableBody').innerHTML = skeletonRows(9, 5);
+    $('eventTableBody').innerHTML = skeletonRows(10, 6);
+    $('statusLegend').innerHTML = '<p class="text-xs text-slate-400">Loading status mix…</p>';
+    $('latencyHeatmap').innerHTML = Array.from({ length: 24 }).map(() => '<div class="map-cell h-7 skeleton"></div>').join('');
+    $('geoMeta').textContent = 'Threat hotspots: loading…';
+    $('eventMeta').textContent = 'Loading latest event stream…';
+    $('clientAnomalies').innerHTML = '<div class="empty-card">Select a client once data loads.</div>';
+  }
+
+  function showToast(message) {
+    const host = $('toastHost');
+    if (!host) return;
+    host.innerHTML = `<div role="status" class="surface rounded-2xl px-3 py-2 text-xs text-slate-700 shadow-soft">${escHtml(message)}</div>`;
+    setTimeout(() => {
+      if (host.textContent?.includes(message)) host.innerHTML = '';
+    }, 2200);
+  }
+
+  function sparkline(id, data, color) {
+    if (charts[id]) charts[id].destroy();
+    charts[id] = new Chart($(id), {
+      type: 'line',
+      data: { labels: data.map((_, i) => i + 1), datasets: [{ data, borderColor: color, backgroundColor: color + '22', fill:true, pointRadius:0, borderWidth:1.5, tension:.35 }] },
+      options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{enabled:false} }, scales:{x:{display:false}, y:{display:false}}, animation:{duration:500} }
     });
   }
 
-  function randSpark(val) {
-    const a = [];
-    for (let i=0;i<7;i++) a.push(Math.max(0, val*(0.65+Math.random()*0.7)));
-    a[6] = val;
-    return a;
+  function upsertChart(id, type, data, options = {}) {
+    if (charts[id]) charts[id].destroy();
+    charts[id] = new Chart($(id), { type, data, options: Object.assign({
+      responsive:true,
+      maintainAspectRatio:false,
+      plugins:{
+        legend:{ labels:{ usePointStyle:true, pointStyle:'circle', boxWidth:6, color:'#64748b', font:{size:11} } },
+        tooltip:{
+          backgroundColor:'rgba(15,23,42,.88)',
+          titleColor:'#e2e8f0',
+          bodyColor:'#cbd5e1',
+          borderColor:'rgba(148,163,184,.35)',
+          borderWidth:1,
+          padding:10,
+          cornerRadius:12
+        }
+      },
+      scales:{
+        x:{ grid:{color:'rgba(148,163,184,.13)'}, ticks:{ color:'#94a3b8', maxTicksLimit:8, font:{size:10}}, border:{display:false} },
+        y:{ grid:{color:'rgba(148,163,184,.13)'}, ticks:{ color:'#94a3b8', font:{size:10}}, border:{display:false} }
+      },
+      animation:{duration:550},
+      elements:{ line:{tension:.35}, point:{radius:0, hoverRadius:4} }
+    }, options) });
   }
 
-  // ============================================================
-  // FETCH
-  // ============================================================
   async function get(url, opts) {
     const r = await fetch(url, opts);
     if (!r.ok) throw new Error(await r.text());
     return r.json();
   }
 
-  // ============================================================
-  // DASHBOARD LOAD
-  // ============================================================
-  let lastData = null;
+  function deriveEventType(row) {
+    const sc = Number(row.statusCode || 0);
+    if (sc === 401 || row.reason === 'invalid_or_missing_key') return 'failed auth';
+    if (sc === 429) return 'rate limit';
+    if (sc === 403) return 'blocked';
+    if (sc >= 500) return 'error';
+    if ((row.latencyMs || 0) > 1200) return 'latency spike';
+    return 'traffic';
+  }
 
-  async function loadDashboard() {
-    const mins = $("minutes").value;
-    const d = await get("/metrics/dashboard?minutes=" + mins);
-    lastData = d;
-    const s = d.summary || {};
-    const total   = s.totalRequests   ?? 0;
-    const allowed = s.allowedRequests ?? 0;
-    const blocked = s.blockedRequests ?? 0;
-    const lat     = s.avgLatencyMs    ?? 0;
-    const sc      = d.statusCodes     || {};
-    const err5xx  = (sc["500"]||0) + (sc["502"]||0) + (sc["503"]||0);
-    const errRate = total > 0 ? (err5xx / total * 100).toFixed(1) : "0.0";
-    const blkRate = total > 0 ? (blocked / total * 100).toFixed(1) : "0.0";
-    const clientCount = Object.keys(d.perClient || {}).length;
-    const riskyCount  = (d.riskyClients||[]).filter(c=>c.riskScore>=70).length;
+  function severityFor(row) {
+    const sc = Number(row.statusCode || 0);
+    if (sc >= 500 || sc === 403) return 'high';
+    if (sc === 429 || (row.latencyMs || 0) > 1000) return 'medium';
+    return 'low';
+  }
 
-    $("kTotal").textContent     = total.toLocaleString();
-    $("kAllowed").textContent   = allowed.toLocaleString();
-    $("kBlocked").textContent   = blocked.toLocaleString();
-    $("kLatency").textContent   = lat + " ms";
-    $("kErrorRate").textContent = errRate + "%";
-    $("kClients").textContent   = clientCount;
-    $("kBlockRate").textContent = blkRate + "%";
-    $("kRisky").textContent     = riskyCount;
+  function severityBadge(s) {
+    if (s === 'high') return '<span class="badge bg-rose-50 text-rose-600">High</span>';
+    if (s === 'medium') return '<span class="badge bg-amber-50 text-amber-600">Medium</span>';
+    return '<span class="badge bg-emerald-50 text-emerald-600">Low</span>';
+  }
 
-    const ts = d.timeseries || { labels:[], requests:[], blocked:[], avgLatencyMs:[] };
-    const sl = ts.requests;
-    if (sl.length) {
-      spark("sparkTotal",     sl.slice(-7),                                                "#3b82f6");
-      spark("sparkAllowed",   sl.slice(-7).map((v,i)=>Math.max(0,v-(ts.blocked[ts.blocked.length-7+i]||0))), "#10b981");
-      spark("sparkBlocked",   ts.blocked.slice(-7),                                        "#f43f5e");
-      spark("sparkLatency",   ts.avgLatencyMs.slice(-7),                                   "#8b5cf6");
-      spark("sparkError",     randSpark(parseFloat(errRate)),                              "#f59e0b");
-      spark("sparkClients",   randSpark(clientCount),                                     "#06b6d4");
-      spark("sparkBlockRate", randSpark(parseFloat(blkRate)),                             "#ec4899");
-      spark("sparkRisky",     randSpark(riskyCount),                                      "#f97316");
+  function decisionBadge(d) {
+    const v = (d || '').toLowerCase();
+    if (v.includes('block')) return '<span class="badge bg-rose-50 text-rose-600">Blocked</span>';
+    if (v.includes('allow')) return '<span class="badge bg-emerald-50 text-emerald-600">Allowed</span>';
+    return '<span class="badge bg-blue-50 text-blue-600">'+ escHtml(d || 'Other') +'</span>';
+  }
+
+  function statusBadge(code) {
+    const c = Number(code || 0);
+    if (c >= 500) return '<span class="font-semibold text-amber-500">' + c + '</span>';
+    if (c === 403 || c === 429 || c === 401) return '<span class="font-semibold text-rose-500">' + c + '</span>';
+    return '<span class="font-semibold text-emerald-500">' + c + '</span>';
+  }
+
+  function regionFromIp(ip) {
+    // UI-only deterministic region grouping used because dashboard event rows currently expose IP but not geo region metadata.
+    if (!ip) return 'global';
+    // Deterministic fallback mapping: take first numeric IP segment, then modulo into 5 region buckets.
+    // This keeps map rendering stable when geo-IP enrichment is unavailable in backend data.
+    const n = Number((ip.match(/\d+/) || ['0'])[0]) % 5;
+    return ['NA', 'EU', 'APAC', 'LATAM', 'MEA'][n];
+  }
+
+  function minuteLabel(timestamp) {
+    const d = new Date(timestamp);
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const h = String(d.getHours()).padStart(2, '0');
+    const min = String(d.getMinutes()).padStart(2, '0');
+    return `${d.getFullYear()}-${m}-${day}T${h}:${min}`;
+  }
+
+  /**
+   * Compare first-half vs second-half average in a time series and return percent change.
+   * Used for KPI trend badges when only one lookback window is available.
+   */
+  function compareDelta(series) {
+    if (!series || series.length < 2) return 0;
+    const mid = Math.max(1, Math.floor(series.length / 2));
+    const prev = series.slice(0, mid);
+    const curr = series.slice(mid);
+    const prevAvg = prev.reduce((a, b) => a + Number(b || 0), 0) / (prev.length || 1);
+    const currAvg = curr.reduce((a, b) => a + Number(b || 0), 0) / (curr.length || 1);
+    if (prevAvg === 0) return currAvg > 0 ? 100 : 0;
+    return ((currAvg - prevAvg) / prevAvg) * 100;
+  }
+
+  function percentile(values, p) {
+    if (!values || !values.length) return 0;
+    const sorted = [...values].map(Number).sort((a, b) => a - b);
+    const idx = Math.min(sorted.length - 1, Math.max(0, Math.ceil((p / 100) * sorted.length) - 1));
+    return sorted[idx];
+  }
+
+  function calculateConfidenceScore(riskScore, totalRequests) {
+    const weightedRisk = Number(riskScore || 0) * CONFIDENCE_RISK_WEIGHT;
+    const weightedVolume = Math.min(CONFIDENCE_VOLUME_CAP, Math.log10(Number(totalRequests || 0) + 1) * CONFIDENCE_VOLUME_SCALE);
+    return Math.min(CONFIDENCE_MAX, Math.max(CONFIDENCE_BASELINE, Math.round(weightedRisk + weightedVolume)));
+  }
+
+  function buildKpis(s, d, events) {
+    const sc = d.statusCodes || {};
+    const total = s.totalRequests || 0;
+    const err5xx = (sc['500']||0) + (sc['502']||0) + (sc['503']||0);
+    const ts = d.timeseries || {};
+    const labels = ts.labels || [];
+    const req = ts.requests || [];
+    const blk = ts.blocked || [];
+    const lat = ts.avgLatencyMs || [];
+    const err = ts.status5xx || [];
+    const ok = req.map((v, i) => Math.max(0, Number(v || 0) - Number(blk[i] || 0) - Number(err[i] || 0)));
+    const errRateSeries = req.map((v, i) => {
+      const t = Number(v || 0);
+      return t > 0 ? (Number(err[i] || 0) / t) * 100 : 0;
+    });
+
+    const byMinute = {};
+    events.forEach((e) => {
+      const k = minuteLabel(e.timestamp);
+      if (!byMinute[k]) byMinute[k] = [];
+      byMinute[k].push(e);
+    });
+    const clientSeries = labels.map((l) => new Set((byMinute[l] || []).map((e) => e.apiKey)).size);
+    const suspiciousSeries = labels.map((l) => (byMinute[l] || []).filter((e) => severityFor(e) !== 'low').length);
+    const peakSeries = req.map((_, i) => Math.max(...req.slice(0, i + 1), 0));
+    const suspicious = suspiciousSeries.reduce((a, b) => a + b, 0);
+    const peak = req.length ? Math.max(...req) : 0;
+
+    KPI_CONFIG[0].value = total;
+    KPI_CONFIG[1].value = s.allowedRequests || 0;
+    KPI_CONFIG[2].value = s.blockedRequests || 0;
+    KPI_CONFIG[3].value = s.avgLatencyMs || 0;
+    KPI_CONFIG[4].value = total ? (err5xx / total * 100) : 0;
+    KPI_CONFIG[5].value = Object.keys(d.perClient || {}).length;
+    KPI_CONFIG[6].value = suspicious;
+    KPI_CONFIG[7].value = peak;
+
+    const container = $('kpiGrid');
+    if (!container.dataset.init) {
+      container.innerHTML = KPI_CONFIG.map((k, i) => `
+        <article class="kpi-card surface rounded-3xl p-4 fade-up" style="animation-delay:${i * .03}s">
+          <div class="flex justify-between items-start mb-2">
+            <p class="text-[11px] uppercase tracking-[.16em] text-slate-500">${k.title}</p>
+            <span aria-hidden="true" class="w-7 h-7 rounded-xl flex items-center justify-center" style="background:${k.color}18;color:${k.color}">${k.icon}</span>
+          </div>
+          <div class="flex items-end justify-between gap-2">
+            <p id="kpi-${k.id}" class="text-2xl font-bold tabular-nums">0</p>
+            <span id="kpi-delta-${k.id}" class="text-[11px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">+0.0%</span>
+          </div>
+          <p class="mt-1 text-[11px] text-slate-500">${k.context}</p>
+          <div class="h-8 mt-2"><canvas id="spark-${k.id}"></canvas></div>
+        </article>
+      `).join('');
+      container.dataset.init = '1';
     }
 
-    // Traffic chart
-    upsert("trafficChart", "line", {
-      labels: ts.labels,
-      datasets: [
-        { label:"Requests", data:ts.requests, borderColor:"#3b82f6", backgroundColor:"rgba(59,130,246,0.1)", fill:true },
-        { label:"Blocked",  data:ts.blocked,  borderColor:"#f43f5e", backgroundColor:"rgba(244,63,94,0.08)", fill:true }
-      ]
-    });
+    KPI_CONFIG.forEach((k) => {
+      const el = $('kpi-' + k.id);
+      const prev = Number(el.dataset.v || 0);
+      animateNumber(el, prev, Number(k.value), (v) => fmtNum(v, k.suffix || ''));
+      el.dataset.v = Number(k.value);
 
-    // Status donut
-    const sk = Object.keys(sc);
-    const sv = Object.values(sc);
-    const scColors = ["#10b981","#3b82f6","#f59e0b","#f43f5e","#8b5cf6","#06b6d4","#ec4899","#f97316"];
-    upsert("statusChart", "doughnut", { labels:sk, datasets:[{ data:sv, backgroundColor:scColors.slice(0,sk.length), borderWidth:2, borderColor:"white" }] });
-
-    // Status legend (using DOM creation to avoid XSS with API-supplied keys)
-    const lgEl = $("statusLegend");
-    lgEl.innerHTML = "";
-    const tot2 = sv.reduce((a,b)=>a+b,0);
-    sk.forEach((k,i) => {
-      const pct = tot2>0 ? Math.round(sv[i]/tot2*100) : 0;
-      const row = document.createElement("div");
-      row.className = "flex items-center justify-between";
-      const left = document.createElement("span");
-      left.className = "flex items-center gap-1.5";
-      const dot = document.createElement("span");
-      dot.className = "w-2 h-2 rounded-full inline-block shrink-0";
-      dot.style.background = scColors[i] || "#94a3b8";
-      const lbl = document.createElement("span");
-      lbl.className = "text-slate-600 dark:text-slate-400";
-      lbl.textContent = k;
-      left.appendChild(dot);
-      left.appendChild(lbl);
-      const right = document.createElement("span");
-      right.className = "font-semibold text-slate-700 dark:text-slate-300 tabular-nums ml-3";
-      right.textContent = sv[i] + " ";
-      const pctSpan = document.createElement("span");
-      pctSpan.className = "font-normal text-slate-400";
-      pctSpan.textContent = "(" + pct + "%)";
-      right.appendChild(pctSpan);
-      row.appendChild(left);
-      row.appendChild(right);
-      lgEl.appendChild(row);
-    });
-
-    // Algo bar (horizontal)
-    const ak = Object.keys(d.blocksByAlgorithm||{});
-    const av = Object.values(d.blocksByAlgorithm||{});
-    upsert("algoChart", "bar", { labels:ak, datasets:[{ data:av, backgroundColor:"rgba(244,63,94,0.75)", borderRadius:4 }] },
-      { indexAxis:"y", scales:{ x:{ grid:{color:"rgba(148,163,184,0.08)"}, ticks:{color:"#94a3b8",font:{size:10}}, border:{display:false} }, y:{ grid:{display:false}, ticks:{color:"#94a3b8",font:{size:10}}, border:{display:false} } } });
-
-    // Latency trend
-    upsert("latencyTrendChart", "line", {
-      labels: ts.labels,
-      datasets: [{ label:"Avg ms", data:ts.avgLatencyMs, borderColor:"#8b5cf6", backgroundColor:"rgba(139,92,246,0.1)", fill:true }]
-    });
-
-    // Status trend
-    upsert("statusTrendChart", "line", {
-      labels: ts.labels,
-      datasets: [
-        { label:"2xx", data:ts.status200||[], borderColor:"#10b981" },
-        { label:"403", data:ts.status403||[], borderColor:"#f59e0b" },
-        { label:"429", data:ts.status429||[], borderColor:"#f43f5e" },
-        { label:"5xx", data:ts.status5xx||[], borderColor:"#8b5cf6" }
-      ]
-    });
-
-    renderRiskTable(d.riskyClients||[]);
-    const allClients = Object.entries(d.perClient||{}).map(([k,v])=>({clientId:k,count:v}));
-    renderClientTable(allClients, total);
-
-    $("lastUpdated").textContent = "Updated " + new Date().toLocaleTimeString();
-  }
-
-  // ============================================================
-  // RISK TABLE
-  // ============================================================
-  function rBadge(score) {
-    if (score >= 70) return `<span class="badge b-crit">${score}</span>`;
-    if (score >= 40) return `<span class="badge b-med">${score}</span>`;
-    return `<span class="badge b-low">${score}</span>`;
-  }
-  function lvlBadge(br) {
-    if (br >= 50) return `<span class="badge b-blk">High</span>`;
-    if (br >= 20) return `<span class="badge b-warn">Med</span>`;
-    return `<span class="badge b-ok">Low</span>`;
-  }
-
-  let selClient = null;
-
-  function renderRiskTable(clients) {
-    const f = $("riskFilter").value;
-    let rows = clients;
-    if (f==="high")   rows = clients.filter(c=>c.riskScore>=70);
-    if (f==="medium") rows = clients.filter(c=>c.riskScore>=40&&c.riskScore<70);
-    if (f==="low")    rows = clients.filter(c=>c.riskScore<40);
-    rows.sort((a,b)=>b.riskScore-a.riskScore);
-
-    const tb = $("riskTableBody");
-    if (!rows.length) { tb.innerHTML=`<tr><td colspan="5" class="px-4 py-8 text-center text-slate-400 dark:text-slate-500">No matching clients</td></tr>`; return; }
-    tb.innerHTML="";
-    rows.forEach(r => {
-      const tr = document.createElement("tr");
-      tr.className = "data-row border-b border-slate-50 dark:border-slate-700/50" + (selClient===r.clientId?" selected":"");
-      tr.dataset.clientId = r.clientId;
-      tr.innerHTML = `<td class="px-4 py-2.5 font-mono text-slate-700 dark:text-slate-300 max-w-[140px] truncate">${r.clientId}</td><td class="px-4 py-2.5">${rBadge(r.riskScore)}</td><td class="px-4 py-2.5 tabular-nums text-slate-600 dark:text-slate-400">${r.blockedRate}%</td><td class="px-4 py-2.5 tabular-nums text-slate-600 dark:text-slate-400">${(r.count||r.totalRequests||0).toLocaleString()}</td><td class="px-4 py-2.5">${lvlBadge(r.blockedRate)}</td>`;
-      tr.onclick = () => loadClientDetails({ clientId:r.clientId, riskScore:r.riskScore, blockedRate:r.blockedRate });
-      tb.appendChild(tr);
-    });
-  }
-
-  // ============================================================
-  // CLIENT VOLUME TABLE
-  // ============================================================
-  function renderClientTable(clients, total) {
-    const tb = $("clientTableBody");
-    if (!clients.length) { tb.innerHTML=`<tr><td colspan="4" class="px-4 py-8 text-center text-slate-400 dark:text-slate-500">No client data</td></tr>`; return; }
-    tb.innerHTML="";
-    clients.slice(0,12).forEach((r,i) => {
-      const share = total>0 ? Math.round(r.count/total*100) : 0;
-      const tr = document.createElement("tr");
-      tr.className = "data-row border-b border-slate-50 dark:border-slate-700/50";
-      tr.innerHTML = `<td class="px-4 py-2.5 text-slate-400 dark:text-slate-500 tabular-nums">${i+1}</td><td class="px-4 py-2.5 font-mono text-slate-700 dark:text-slate-300 max-w-[140px] truncate">${r.clientId}</td><td class="px-4 py-2.5 font-semibold tabular-nums text-slate-700 dark:text-slate-300">${r.count.toLocaleString()}</td><td class="px-4 py-2.5 w-40"><div class="flex items-center gap-2"><div class="flex-1 h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden"><div class="h-full bg-blue-500 rounded-full" style="width:${share}%"></div></div><span class="text-xs text-slate-400 tabular-nums w-8">${share}%</span></div></td>`;
-      tr.onclick = () => loadClientDetails({ clientId:r.clientId });
-      tb.appendChild(tr);
-    });
-  }
-
-  // ============================================================
-  // CLIENT DETAILS PANEL
-  // ============================================================
-  async function loadClientDetails(row) {
-    const mins = $("minutes").value;
-    selClient = row.clientId;
-    // highlight using data-client-id attribute instead of text content comparison
-    document.querySelectorAll("#riskTableBody tr[data-client-id]").forEach(tr => {
-      tr.classList.toggle("selected", tr.dataset.clientId === row.clientId);
-    });
-
-    $("clientEmptyState").classList.add("hidden");
-    $("clientDetailsPanel").classList.remove("hidden");
-    $("clientPanelSub").textContent = row.clientId;
-    $("clientName").textContent = row.clientId;
-    $("clientAvatar").textContent = row.clientId.charAt(0).toUpperCase();
-
-    try {
-      const det = await get("/metrics/dashboard/client/" + encodeURIComponent(row.clientId) + "?minutes=" + mins);
-      const sm = det.summary || {};
-      const tot = sm.totalRequests ?? 0;
-      const blk = sm.blockedRequests ?? 0;
-      const br  = tot > 0 ? (blk/tot*100).toFixed(1) : "0.0";
-
-      $("cdTotal").textContent   = tot.toLocaleString();
-      $("cdBlockRate").textContent = br + "%";
-      $("cdRisk").textContent    = row.riskScore != null ? row.riskScore : "N/A";
-      $("cdLatency").textContent = (sm.avgLatencyMs ?? 0) + " ms";
-      $("clientMeta").textContent = "Last " + mins + " min";
-
-      // Status code badges (using inline styles to avoid dynamic Tailwind class construction)
-      const scEl = $("cdStatusCodes");
-      scEl.innerHTML = "";
-      const scStyle = (code) => {
-        const n = parseInt(code);
-        if (n>=200&&n<300) return { bg:"#d1fae5", color:"#065f46" };
-        if (n===403)        return { bg:"#fef3c7", color:"#92400e" };
-        if (n===429)        return { bg:"#fff1f2", color:"#be123c" };
-        if (n>=500)         return { bg:"#fee2e2", color:"#991b1b" };
-        return { bg:"#f1f5f9", color:"#475569" };
+      const trendSeriesMap = {
+        total: req,
+        success: ok,
+        blocked: blk,
+        latency: lat,
+        error: errRateSeries,
+        clients: clientSeries,
+        suspicious: suspiciousSeries,
+        peak: peakSeries
       };
-      Object.entries(det.statusCodes||{}).slice(0,8).forEach(([code, count]) => {
-        const style = scStyle(code);
-        const span = document.createElement("span");
-        span.className = "inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-md";
-        span.style.background = style.bg;
-        span.style.color = style.color;
-        span.textContent = code + " ";
-        const cnt = document.createElement("span");
-        cnt.style.opacity = "0.7";
-        cnt.style.fontWeight = "normal";
-        cnt.textContent = count;
-        span.appendChild(cnt);
-        scEl.appendChild(span);
-      });
+      const trend = compareDelta(trendSeriesMap[k.id]).toFixed(1);
+      const dEl = $('kpi-delta-' + k.id);
+      dEl.textContent = `${trend > 0 ? '+' : ''}${trend}%`;
+      dEl.className = 'text-[11px] px-2 py-0.5 rounded-full ' + (trend > 0
+        ? 'bg-emerald-50 text-emerald-600'
+        : 'bg-rose-50 text-rose-600');
 
-      // Mini chart
-      if (charts["clientTrafficChart"]) charts["clientTrafficChart"].destroy();
-      const ts = det.timeseries || { labels:[], requests:[], blocked:[] };
-      charts["clientTrafficChart"] = new Chart($("clientTrafficChart"), {
-        type:"line",
-        data:{ labels:ts.labels, datasets:[
-          { label:"Req", data:ts.requests, borderColor:"#3b82f6", backgroundColor:"rgba(59,130,246,0.08)", fill:true, tension:0.35, borderWidth:1.5, pointRadius:0 },
-          { label:"Blk", data:ts.blocked,  borderColor:"#f43f5e", backgroundColor:"rgba(244,63,94,0.06)", fill:true, tension:0.35, borderWidth:1.5, pointRadius:0 }
-        ]},
-        options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false},tooltip:TOOLTIP}, scales:{x:{display:false},y:{display:false}}, animation:{duration:350} }
-      });
-      $("clientRaw").textContent = fmt(det);
-    } catch(e) {
-      $("clientRaw").textContent = "Error: " + e.message;
-    }
+      const sparkSeriesMap = {
+        total: req,
+        success: ok,
+        blocked: blk,
+        latency: lat,
+        error: errRateSeries,
+        clients: clientSeries,
+        suspicious: suspiciousSeries,
+        peak: peakSeries
+      };
+      const factor = (sparkSeriesMap[k.id] || []).slice(-8);
+      sparkline('spark-' + k.id, factor.length ? factor : [1,2,2,3,2,4,3], k.color);
+    });
   }
 
-  // ============================================================
-  // EVENT FEED
-  // ============================================================
-  function evtQuery() {
-    const p = new URLSearchParams();
-    p.set("minutes", $("minutes").value);
-    [["tenant","fTenant"],["app","fApp"],["client","fClient"],["ip","fIp"],["status","fStatus"],["algorithm","fAlgorithm"],["limit","fLimit"]].forEach(([k,id]) => {
-      const v = $(id).value.trim(); if(v) p.set(k,v);
+  function renderStatusLegend(statusCodes) {
+    const colors = ['#3b82f6','#10b981','#f43f5e','#f59e0b','#8b5cf6','#ec4899','#06b6d4','#f97316'];
+    const keys = Object.keys(statusCodes || {});
+    const values = Object.values(statusCodes || {});
+    const sum = values.reduce((a,b) => a+b, 0) || 1;
+    $('statusLegend').innerHTML = keys.length
+      ? keys.map((k, i) => `<div class="flex justify-between items-center"><span class="flex items-center gap-2"><span class="status-dot" style="background:${colors[i]}"></span>${escHtml(k)}</span><span class="text-slate-500">${values[i]} (${Math.round(values[i]/sum*100)}%)</span></div>`).join('')
+      : '<p class="text-xs text-slate-400">No status data</p>';
+  }
+
+  function renderLatencyHeatmap(values) {
+    const arr = values?.slice(-24) || [];
+    const base = arr.length ? Math.max(...arr) : 1;
+    $('latencyHeatmap').innerHTML = Array.from({ length: 24 }).map((_, i) => {
+      const val = arr[i] || 0;
+      const intensity = Math.min(.95, base ? (val / base) : 0);
+      const bg = `rgba(139,92,246,${0.08 + intensity * .8})`;
+      return `<div class="map-cell h-7 flex items-center justify-center text-[10px] text-slate-600" style="background:${bg}">${Math.round(val)}</div>`;
+    }).join('');
+  }
+
+  function renderRiskTable(risky, events) {
+    let rows = [...(risky || [])];
+    const f = $('riskFilter').value;
+    const eventByClient = new Map();
+    events.forEach((e) => {
+      if (e?.apiKey && !eventByClient.has(e.apiKey)) eventByClient.set(e.apiKey, e);
     });
+    rows = rows.map(r => {
+      const sev = r.riskScore >= 70 ? 'high' : r.riskScore >= 40 ? 'medium' : 'low';
+      const totalReq = Number(r.totalRequests || r.count || 0);
+      const conf = calculateConfidenceScore(r.riskScore, totalReq);
+      const region = regionFromIp((eventByClient.get(r.clientId) || {}).ip);
+      const keyHealth = (r.blockedRate || 0) > 45 ? 'degraded' : (r.blockedRate || 0) > 20 ? 'warning' : 'healthy';
+      return Object.assign({}, r, { sev, conf, region, keyHealth });
+    });
+
+    if (f) rows = rows.filter(r => r.sev === f);
+    const tb = $('riskTableBody');
+
+    if (!rows.length) {
+      tb.innerHTML = '<tr><td colspan="9" class="px-4 py-8 text-center text-slate-500">No matching risk records.</td></tr>';
+      return;
+    }
+
+    tb.innerHTML = rows.map(r => {
+      const sevBadge = severityBadge(r.sev);
+      const keyBadge = r.keyHealth === 'healthy'
+        ? '<span class="badge bg-emerald-50 text-emerald-600">Healthy</span>'
+        : r.keyHealth === 'warning'
+          ? '<span class="badge bg-amber-50 text-amber-600">Warning</span>'
+          : '<span class="badge bg-rose-50 text-rose-600">Degraded</span>';
+
+      const clientId = String(r.clientId || '');
+      const clientAttr = encodeURIComponent(clientId);
+      return `<tr class="table-row border-b border-slate-100 ${selectedClient === r.clientId ? 'selected' : ''}" data-client="${clientAttr}">
+        <td class="px-4 py-3 font-mono">${escHtml(clientId)}</td>
+        <td class="px-4 py-3">${sevBadge}</td>
+        <td class="px-4 py-3 tabular-nums font-semibold text-orange-500">${Number(r.riskScore).toFixed(1)}</td>
+        <td class="px-4 py-3 tabular-nums">${Number(r.blockedRate).toFixed(1)}%</td>
+        <td class="px-4 py-3 tabular-nums">${Number(r.totalRequests || r.count || 0).toLocaleString()}</td>
+        <td class="px-4 py-3">${r.region}</td>
+        <td class="px-4 py-3">${keyBadge}</td>
+        <td class="px-4 py-3 tabular-nums">${r.conf}%</td>
+        <td class="px-4 py-3"><button class="ghost-btn rounded-lg px-2 py-1 text-[11px] view-detail" data-client="${clientAttr}">View details</button></td>
+      </tr>`;
+    }).join('');
+
+    tb.querySelectorAll('button.view-detail[data-client]').forEach(btn => {
+      const openDetails = () => {
+        const c = decodeURIComponent(btn.dataset.client || '');
+        const row = rows.find(x => x.clientId === c);
+        loadClientDetails(row);
+      };
+      btn.onclick = openDetails;
+      btn.onkeydown = (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          openDetails();
+        }
+      };
+    });
+  }
+
+  async function loadClientDetails(row) {
+    if (!row?.clientId) return;
+    selectedClient = row.clientId;
+    $('clientEmptyState').classList.add('hidden');
+    $('clientDetailsPanel').classList.remove('hidden');
+
+    $('clientAvatar').textContent = row.clientId[0]?.toUpperCase() || '?';
+    $('clientName').textContent = row.clientId;
+    $('clientPanelSub').textContent = `Monitoring ${row.clientId}`;
+    $('clientRiskPill').outerHTML = `<span id="clientRiskPill" class="badge ${row.riskScore >= 70 ? 'bg-rose-50 text-rose-600' : row.riskScore >= 40 ? 'bg-amber-50 text-amber-600' : 'bg-emerald-50 text-emerald-600'}">Risk ${Number(row.riskScore).toFixed(1)}</span>`;
+
+    const mins = getMinutes();
+    const det = await get('/metrics/dashboard/client/' + encodeURIComponent(row.clientId) + '?minutes=' + mins);
+
+    const total = det.totalRequests || 0;
+    const blocked = det.blockedRequests || 0;
+    const br = total ? (blocked / total * 100) : 0;
+
+    $('cdTotal').textContent = total.toLocaleString();
+    $('cdBlockRate').textContent = br.toFixed(1) + '%';
+    $('cdRisk').textContent = Number(row.riskScore).toFixed(1);
+    $('cdLatency').textContent = Number(det.avgLatencyMs || 0).toFixed(2) + ' ms';
+    $('clientMeta').textContent = `Last ${mins} min · ${Object.keys(det.statusCodes || {}).length} status buckets`;
+
+    const sc = det.statusCodes || {};
+    $('cdStatusCodes').innerHTML = Object.keys(sc).length
+      ? Object.entries(sc).slice(0,8).map(([code, n]) => `<span class="badge bg-slate-100 text-slate-700">${code} · ${n}</span>`).join('')
+      : '<span class="text-xs text-slate-500">No status profile</span>';
+
+    const recent = det.recent || [];
+    $('clientAnomalies').innerHTML = recent.length
+      ? recent.slice(0,5).map(e => `<div class="rounded-xl border border-slate-200 p-2 bg-slate-50"><div class="flex justify-between gap-2"><span class="text-slate-500">${new Date(e.timestamp).toLocaleTimeString()}</span>${severityBadge(severityFor(e))}</div><p class="mt-1 truncate">${deriveEventType(e)} · ${e.path || '-'}</p></div>`).join('')
+      : '<p class="text-xs text-slate-500">No anomalies recorded.</p>';
+
+    upsertChart('clientTrafficChart', 'line', {
+      labels: (recent.slice().reverse().map(e => new Date(e.timestamp).toLocaleTimeString())),
+      datasets: [
+        { label:'Latency', data: recent.slice().reverse().map(e => e.latencyMs), borderColor:'#8b5cf6', backgroundColor:'rgba(139,92,246,.14)', fill:true },
+        { label:'Status', data: recent.slice().reverse().map(e => e.statusCode), borderColor:'#3b82f6' }
+      ]
+    }, { scales:{ x:{ display:false }, y:{ display:false } }, plugins:{ legend:{display:false} } });
+
+    renderRiskTable(dashboard.riskyClients || [], dashboard.events || []);
+  }
+
+  function getMinutes() {
+    const active = document.querySelector('.time-pill.bg-white');
+    return Number(active?.dataset.minutes || 60);
+  }
+
+  function buildEventQuery() {
+    const p = new URLSearchParams();
+    p.set('minutes', String(getMinutes()));
+    const q = [
+      ['tenant', 'fTenant'], ['app', 'fApp'], ['client', 'fClient'],
+      ['ip', 'fIp'], ['status', 'fStatus'], ['algorithm', 'fAlgorithm']
+    ];
+    q.forEach(([k, id]) => {
+      const v = $(id).value.trim();
+      if (v) p.set(k, v);
+    });
+    p.set('limit', '200');
     return p.toString();
   }
 
-  function decBadge(d) {
-    if (!d) return "";
-    const l = d.toLowerCase();
-    if (l==="blocked"||l==="block") return `<span class="badge b-blk">${d}</span>`;
-    if (l==="allowed"||l==="allow") return `<span class="badge b-ok">${d}</span>`;
-    return `<span class="badge b-info">${d}</span>`;
+  function eventMatchesLocalFilters(e) {
+    const endpoint = $('fEndpoint').value.trim().toLowerCase();
+    const region = $('fRegion').value.trim().toLowerCase();
+    const severity = $('fSeverity').value.trim().toLowerCase();
+    const evRegion = regionFromIp(e.ip).toLowerCase();
+    const sev = severityFor(e);
+
+    if (endpoint && !(e.path || '').toLowerCase().includes(endpoint)) return false;
+    if (region && !evRegion.includes(region)) return false;
+    if (severity && sev !== severity) return false;
+    return true;
   }
 
-  function stBadge(code) {
-    const c = parseInt(code);
-    if (c>=200&&c<300) return `<span class="font-semibold tabular-nums text-emerald-600 dark:text-emerald-400">${code}</span>`;
-    if (c===429||c===403) return `<span class="font-semibold tabular-nums text-rose-500 dark:text-rose-400">${code}</span>`;
-    if (c>=500) return `<span class="font-semibold tabular-nums text-amber-500 dark:text-amber-400">${code}</span>`;
-    return `<span class="tabular-nums text-slate-500">${code}</span>`;
+  function renderEvents(events) {
+    const tb = $('eventTableBody');
+    if (!events.length) {
+      tb.innerHTML = '<tr><td colspan="10" class="px-4 py-10 text-center text-slate-500">No events found for selected filters.</td></tr>';
+      return;
+    }
+
+    tb.innerHTML = events.map(e => {
+      const sev = severityFor(e);
+      const type = deriveEventType(e);
+      const path = escHtml(e.path || '');
+      const tenant = escHtml(e.tenantId || '—');
+      const app = escHtml(e.appId || '—');
+      const apiKey = escHtml(e.apiKey || '—');
+      const ip = escHtml(e.ip || '—');
+      return `<tr class="border-b border-slate-100 hover:bg-slate-50/70">
+        <td class="px-4 py-3 text-slate-500">${new Date(e.timestamp).toLocaleTimeString()}</td>
+        <td class="px-4 py-3"><span class="badge bg-blue-50 text-blue-600">${type}</span></td>
+        <td class="px-4 py-3">${severityBadge(sev)}</td>
+        <td class="px-4 py-3">${tenant} / ${app}</td>
+        <td class="px-4 py-3 font-mono">${apiKey}</td>
+        <td class="px-4 py-3 font-mono text-slate-500">${ip} (${regionFromIp(e.ip)})</td>
+        <td class="px-4 py-3">${statusBadge(e.statusCode)}</td>
+        <td class="px-4 py-3">${decisionBadge(e.decision)}</td>
+        <td class="px-4 py-3 tabular-nums">${e.latencyMs ?? 0}ms</td>
+        <td class="px-4 py-3 font-mono truncate max-w-[180px]" title="${path}">${path || '—'}</td>
+      </tr>`;
+    }).join('');
   }
 
-  async function loadEventFeed() {
-    const data = await get("/metrics/dashboard/events?" + evtQuery());
-    $("eventMeta").textContent = "Matched: " + (data.totalMatched??0) + " · Showing: " + (data.returned??0);
-    const tb = $("eventTableBody");
-    const evs = data.events || [];
-    if (!evs.length) { tb.innerHTML=`<tr><td colspan="9" class="px-4 py-8 text-center text-slate-400 dark:text-slate-500">No events found</td></tr>`; return data; }
-    tb.innerHTML="";
-    evs.forEach(r => {
-      const dec = (r.decision||"").toLowerCase();
-      const cls = dec==="blocked"||dec==="block" ? "ev-blocked" : dec==="allowed"||dec==="allow" ? "ev-allowed" : "ev-other";
-      const tr = document.createElement("tr");
-      tr.className = `ev-item border-b border-slate-50 dark:border-slate-700/50 ${cls}`;
-      tr.innerHTML = `<td class="px-4 py-2.5 text-slate-400 dark:text-slate-500 whitespace-nowrap tabular-nums">${relTime(r.timestamp)}</td><td class="px-4 py-2.5">${decBadge(r.decision)}</td><td class="px-4 py-2.5 text-slate-500 dark:text-slate-400 max-w-[100px] truncate">${r.tenantId||"—"} / ${r.appId||"—"}</td><td class="px-4 py-2.5 font-mono text-slate-700 dark:text-slate-300 max-w-[100px] truncate">${r.apiKey}</td><td class="px-4 py-2.5 font-mono text-slate-500 dark:text-slate-400">${r.ip}</td><td class="px-4 py-2.5">${stBadge(r.statusCode)}</td><td class="px-4 py-2.5 text-slate-500 dark:text-slate-400">${r.algorithm||"—"}</td><td class="px-4 py-2.5 tabular-nums text-slate-500 dark:text-slate-400 whitespace-nowrap">${r.latencyMs}ms</td><td class="px-4 py-2.5 font-mono text-slate-400 dark:text-slate-500 max-w-[100px] truncate" title="${r.path}">${r.path}</td>`;
-      tb.appendChild(tr);
+  function renderAdvancedCharts(d, events) {
+    const ts = d.timeseries || { labels:[], requests:[], blocked:[], avgLatencyMs:[], status5xx:[] };
+    const labels = ts.labels || [];
+    const req = ts.requests || [];
+    const blk = ts.blocked || [];
+    const lat = ts.avgLatencyMs || [];
+    const err = ts.status5xx || [];
+    const ok = req.map((v, i) => Math.max(0, v - (blk[i] || 0) - (err[i] || 0)));
+
+    const previousReq = req.length > 1 ? [req[0], ...req.slice(0, -1)] : req;
+    const previousBlk = blk.length > 1 ? [blk[0], ...blk.slice(0, -1)] : blk;
+
+    upsertChart('trafficChart', 'line', {
+      labels,
+      datasets: [
+        { label:'Requests', data: compareMode === 'current' ? req : previousReq, borderColor:'#3b82f6', backgroundColor:'rgba(59,130,246,.15)', fill:true, borderWidth:2 },
+        { label:'Blocked', data: compareMode === 'current' ? blk : previousBlk, borderColor:'#f43f5e', backgroundColor:'rgba(244,63,94,.12)', fill:true, borderWidth:2 }
+      ]
+    }, { plugins:{ legend:{display:true} } });
+
+    const statusCodes = d.statusCodes || {};
+    const sk = Object.keys(statusCodes);
+    const sv = Object.values(statusCodes);
+    upsertChart('statusChart', 'doughnut', {
+      labels: sk,
+      datasets: [{
+        data: sv,
+        backgroundColor: ['#3b82f6','#10b981','#f43f5e','#f59e0b','#8b5cf6','#06b6d4','#ec4899','#f97316'],
+        borderColor: 'white',
+        borderWidth: 3,
+        spacing: 2,
+        hoverOffset: 4
+      }]
+    }, { cutout: '66%', scales: {} });
+    renderStatusLegend(statusCodes);
+
+    upsertChart('sourceChart', 'bar', {
+      labels: ['Allowed', 'Blocked', 'Error'],
+      datasets: [{ data: [ok.reduce((a,b)=>a+b,0), blk.reduce((a,b)=>a+b,0), err.reduce((a,b)=>a+b,0)], backgroundColor:['#10b981','#f43f5e','#f59e0b'], borderRadius:9 }]
+    }, { scales:{ x:{ grid:{display:false} } }, plugins:{ legend:{display:false} } });
+
+    const byMinute = {};
+    events.forEach((e) => {
+      const k = minuteLabel(e.timestamp);
+      if (!byMinute[k]) byMinute[k] = [];
+      byMinute[k].push(e);
     });
-    return data;
+    const p50 = labels.map((l) => percentile((byMinute[l] || []).map((e) => Number(e.latencyMs || 0)), 50));
+    const p90 = labels.map((l) => percentile((byMinute[l] || []).map((e) => Number(e.latencyMs || 0)), 90));
+    const p99 = labels.map((l) => percentile((byMinute[l] || []).map((e) => Number(e.latencyMs || 0)), 99));
+
+    upsertChart('percentileChart', 'line', {
+      labels,
+      datasets: [
+        { label:'P50', data: p50, borderColor:'#3b82f6' },
+        { label:'P90', data: p90, borderColor:'#8b5cf6' },
+        { label:'P99', data: p99, borderColor:'#f97316' }
+      ]
+    }, { plugins:{ legend:{display:true} } });
+
+    upsertChart('stackedChart', 'bar', {
+      labels,
+      datasets: [
+        { label:'Successful', data: ok, backgroundColor:'rgba(16,185,129,.78)', borderRadius:7 },
+        { label:'Blocked', data: blk, backgroundColor:'rgba(244,63,94,.78)', borderRadius:7 },
+        { label:'Errors', data: err, backgroundColor:'rgba(245,158,11,.78)', borderRadius:7 }
+      ]
+    }, { scales:{ x:{ stacked:true }, y:{ stacked:true } }, plugins:{ legend:{display:true} } });
+
+    const topClientEntries = Object.entries(d.perClient || {}).slice(0, 5);
+    upsertChart('apiUsageChart', 'line', {
+      labels,
+      datasets: topClientEntries.map(([key], idx) => ({
+        label: key,
+        data: labels.map((l) => (byMinute[l] || []).filter((e) => e.apiKey === key).length),
+        borderColor: ['#06b6d4','#3b82f6','#8b5cf6','#10b981','#ec4899'][idx],
+        fill: false
+      }))
+    }, { plugins:{ legend:{display:true} } });
+
+    const blockedByPath = {};
+    events.filter(e => Number(e.statusCode) === 403 || Number(e.statusCode) === 429).forEach(e => {
+      blockedByPath[e.path || 'unknown'] = (blockedByPath[e.path || 'unknown'] || 0) + 1;
+    });
+    const be = Object.entries(blockedByPath).sort((a,b) => b[1]-a[1]).slice(0,6);
+    upsertChart('blockedEndpointsChart', 'bar', {
+      labels: be.map(([k]) => k),
+      datasets: [{ data: be.map(([,v]) => v), backgroundColor:'rgba(244,63,94,.78)', borderRadius:7 }]
+    }, { indexAxis:'y', plugins:{ legend:{display:false} } });
+
+    upsertChart('decisionChart', 'doughnut', {
+      labels: ['Allowed', 'Blocked', 'Warnings'],
+      datasets: [{
+        data: [ok.reduce((a,b)=>a+b,0), blk.reduce((a,b)=>a+b,0), err.reduce((a,b)=>a+b,0)],
+        backgroundColor:['#10b981','#f43f5e','#f59e0b'],
+        borderWidth: 3,
+        borderColor: 'white',
+        spacing:2
+      }]
+    }, { cutout:'66%', scales:{} });
+
+    const avgBlockRate = Number(d.summary?.blockRate || 0);
+    const avgLatency = Number(d.summary?.avgLatencyMs || 0);
+    const totalEvents = events.length || 1;
+    const authFailures = (((d.statusCodes || {})['401'] || 0) / totalEvents) * 100;
+    const blockConcentration = be.length ? ((be[0][1] || 0) / totalEvents) * 100 : 0;
+    const geoSpread = (new Set(events.map((e) => regionFromIp(e.ip))).size / 5) * 100;
+    const highRiskClients = (d.riskyClients || []).filter((r) => Number(r.riskScore || 0) >= 70).length;
+    const keyVolatility = Math.min(100, ((highRiskClients / Math.max(1, Object.keys(d.perClient || {}).length)) * 100));
+    const p99Avg = p99.length ? p99.reduce((a, b) => a + Number(b || 0), 0) / p99.length : 0;
+    const latencyAnomaly = Math.min(100, p99Avg > 0 ? (avgLatency / p99Avg) * 100 : 0);
+    upsertChart('riskRadarChart', 'radar', {
+      labels:['Volume abuse','Auth failures','Latency anomalies','Block concentration','Geo spread','Key volatility'],
+      datasets:[{
+        label:'Risk profile',
+        data:[
+          Math.min(100, avgBlockRate),
+          Math.min(100, authFailures),
+          Math.min(100, latencyAnomaly),
+          Math.min(100, blockConcentration),
+          Math.min(100, geoSpread),
+          Math.min(100, keyVolatility)
+        ],
+        borderColor:'#f97316',
+        backgroundColor:'rgba(249,115,22,.18)',
+        pointBackgroundColor:'#f97316',
+        pointRadius:2
+      }]
+    }, {
+      scales:{ r:{ angleLines:{color:'rgba(148,163,184,.2)'}, grid:{color:'rgba(148,163,184,.2)'}, pointLabels:{color:'#94a3b8', font:{size:10}}, ticks:{display:false, backdropColor:'transparent'}, suggestedMin:0, suggestedMax:100 } }
+    });
+
+    renderLatencyHeatmap(lat);
   }
 
-  // ============================================================
-  // CONFIG
-  // ============================================================
+  async function loadDashboard() {
+    setLoadingState();
+    const mins = getMinutes();
+    const d = await get('/metrics/dashboard?minutes=' + mins);
+    const evData = await get('/metrics/dashboard/events?' + buildEventQuery());
+    const events = (evData.events || []).filter(eventMatchesLocalFilters);
+    dashboard = Object.assign({}, d, { events });
+
+    buildKpis(d.summary || {}, d, events);
+    renderRiskTable(d.riskyClients || [], events);
+    renderAdvancedCharts(d, events);
+    renderEvents(events);
+
+    const incidents = events.filter(e => severityFor(e) !== 'low').length;
+    $('incidentCount').textContent = incidents + ' active incidents';
+    unreadNotifications = incidents;
+    syncNotificationAccessibility();
+    $('lastUpdated').textContent = 'Updated ' + new Date().toLocaleTimeString();
+    $('eventMeta').textContent = `Matched: ${evData.totalMatched ?? events.length} · Showing: ${events.length}`;
+
+    const regionCounts = {};
+    events.forEach(e => { const r = regionFromIp(e.ip); regionCounts[r] = (regionCounts[r] || 0) + 1; });
+    const topRegions = Object.entries(regionCounts).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([k,v]) => `${k} ${v}`).join(' · ');
+    $('geoMeta').textContent = topRegions ? `Threat hotspots: ${topRegions}` : 'Threat hotspots: no data';
+    $('dashboard-main-panel').setAttribute('aria-busy', 'false');
+  }
+
   async function loadConfig() {
-    const c = await get("/config/rate-limit");
-    $("configJson").value = fmt(c);
+    const c = await get('/config/rate-limit');
+    $('configJson').value = JSON.stringify(c, null, 2);
   }
 
-  // ============================================================
-  // EVENT LISTENERS
-  // ============================================================
-  $("refreshBtn").onclick = async () => { await loadDashboard(); await loadEventFeed(); await loadConfig(); };
-  $("minutes").onchange   = async () => { await loadDashboard(); await loadEventFeed(); };
-  $("riskFilter").onchange = () => { if(lastData) renderRiskTable(lastData.riskyClients||[]); };
+  function setTimePill(minutes) {
+    document.querySelectorAll('.time-pill').forEach(b => {
+      const active = Number(b.dataset.minutes) === Number(minutes);
+      b.classList.toggle('bg-white', active);
+      b.classList.toggle('shadow-sm', active);
+      b.classList.toggle('text-slate-900', active);
+      b.setAttribute('aria-selected', active ? 'true' : 'false');
+      b.tabIndex = active ? 0 : -1;
+      if (active) $('dashboard-time-panel').setAttribute('aria-labelledby', b.id);
+    });
+  }
 
-  $("applyEventFilters").onclick = loadEventFeed;
-  $("clearEventFilters").onclick = async () => {
-    ["fTenant","fApp","fClient","fIp","fStatus","fAlgorithm","fLimit"].forEach(id=>$(id).value="");
-    await loadEventFeed();
-  };
+  document.querySelectorAll('.time-pill').forEach(btn => {
+    btn.onclick = async () => {
+      setTimePill(btn.dataset.minutes);
+      await loadDashboard();
+    };
+    btn.onkeydown = async (e) => {
+      if (!['ArrowRight', 'ArrowLeft', 'Home', 'End', 'Enter', ' '].includes(e.key)) return;
+      e.preventDefault();
+      if (e.key === 'Enter' || e.key === ' ') {
+        setTimePill(btn.dataset.minutes);
+        await loadDashboard();
+        return;
+      }
+      const tabs = [...document.querySelectorAll('.time-pill')];
+      const idx = tabs.indexOf(btn);
+      const next = e.key === 'Home'
+        ? tabs[0]
+        : e.key === 'End'
+          ? tabs[tabs.length - 1]
+          : e.key === 'ArrowRight'
+            ? tabs[(idx + 1) % tabs.length]
+            : tabs[(idx - 1 + tabs.length) % tabs.length];
+      next.focus();
+      setTimePill(next.dataset.minutes);
+      await loadDashboard();
+    };
+  });
+  setTimePill(60);
 
-  $("exportFilteredEventsCsv").onclick = async () => {
-    const data = await loadEventFeed();
-    const rows = data.events || [];
-    const hdr = ["timestamp","tenantId","appId","apiKey","ip","statusCode","algorithm","latencyMs","decision","reason","path"];
-    const csvEscape = (v) => '"' + String(v??'').replaceAll('"','""') + '"';
-    const csv = [hdr.join(","), ...rows.map(r=>hdr.map(h=>csvEscape(h==="timestamp"?fmtTs(r[h]):r[h])).join(","))].join("\n");
-    const a = Object.assign(document.createElement("a"), { href:URL.createObjectURL(new Blob([csv],{type:"text/csv"})), download:"events-"+Date.now()+".csv" });
-    a.click();
-  };
+  document.querySelectorAll('.cmp-btn').forEach(btn => {
+    btn.onclick = async () => {
+      compareMode = btn.dataset.mode;
+      document.querySelectorAll('.cmp-btn').forEach(x => x.classList.remove('bg-white'));
+      btn.classList.add('bg-white');
+      if (dashboard) renderAdvancedCharts(dashboard, dashboard.events || []);
+    };
+  });
 
-  $("exportReportBtn").onclick = () => $("exportFilteredEventsCsv").click();
-
-  $("downloadConfig").onclick = async () => {
-    const c = await get("/config/rate-limit");
-    const a = Object.assign(document.createElement("a"), { href:URL.createObjectURL(new Blob([fmt(c)],{type:"application/json"})), download:"rate-limit-config.json" });
-    a.click();
-  };
-
-  $("applyConfig").onclick = async () => {
-    let payload;
-    try { payload = JSON.parse($("configJson").value); }
-    catch(e) { alert("Invalid JSON\n\n" + e.message); return; }
-    await get("/config/rate-limit", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(payload) });
-    await loadDashboard(); await loadEventFeed(); await loadConfig();
-  };
-
-  // ============================================================
-  // INIT
-  // ============================================================
-  (async () => {
+  $('refreshBtn').onclick = async () => { await loadDashboard(); await loadConfig(); };
+  $('riskFilter').onchange = () => renderRiskTable(dashboard?.riskyClients || [], dashboard?.events || []);
+  $('applyEventFilters').onclick = loadDashboard;
+  $('clearEventFilters').onclick = async () => {
+    ['fTenant','fApp','fClient','fIp','fStatus','fAlgorithm','fEndpoint','fRegion','fSeverity'].forEach(id => $(id).value = '');
     await loadDashboard();
-    await loadEventFeed();
+  };
+
+  $('exportFilteredEventsCsv').onclick = () => {
+    const rows = dashboard?.events || [];
+    const hdr = ['timestamp','tenantId','appId','apiKey','ip','statusCode','algorithm','latencyMs','decision','reason','path'];
+    const esc = (v) => '"' + String(v ?? '').replaceAll('"','""') + '"';
+    const csv = [hdr.join(','), ...rows.map(r => hdr.map(h => esc(h === 'timestamp' ? new Date(r[h]).toISOString() : r[h])).join(','))].join('\n');
+    const a = Object.assign(document.createElement('a'), {
+      href: URL.createObjectURL(new Blob([csv], { type:'text/csv' })),
+      download: 'gateway-events-' + Date.now() + '.csv'
+    });
+    a.click();
+  };
+
+  $('exportReportBtn').onclick = () => $('exportFilteredEventsCsv').click();
+  $('exportQuickAction').onclick = () => $('exportFilteredEventsCsv').click();
+  $('downloadConfigBtn').onclick = async () => {
+    const c = await get('/config/rate-limit');
+    const a = Object.assign(document.createElement('a'), {
+      href: URL.createObjectURL(new Blob([JSON.stringify(c, null, 2)], { type:'application/json' })),
+      download: 'rate-limit-config.json'
+    });
+    a.click();
+  };
+
+  $('applyConfig').onclick = async () => {
+    let payload;
+    try { payload = JSON.parse($('configJson').value); }
+    catch (e) { showToast('Invalid JSON: ' + e.message); return; }
+    await get('/config/rate-limit', {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json' },
+      body: JSON.stringify(payload)
+    });
+    await loadDashboard();
     await loadConfig();
-    setInterval(async () => { await loadDashboard(); await loadEventFeed(); }, REFRESH_MS);
-  })().catch(e => console.error("Init error:", e));
+  };
+
+  document.addEventListener('keydown', (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+      e.preventDefault();
+      showToast('Command palette coming soon.');
+    }
+  });
+  $('cmdSearch').onclick = () => showToast('Command palette coming soon.');
+
+  (async () => {
+    setLoadingState();
+    syncNotificationAccessibility();
+    await loadDashboard();
+    await loadConfig();
+    setInterval(loadDashboard, REFRESH_MS);
+  })().catch((e) => {
+    console.error('Dashboard init failed:', e);
+    $('eventMeta').textContent = 'Failed to load dashboard data';
+  });
 </script>
 </body>
 </html>
