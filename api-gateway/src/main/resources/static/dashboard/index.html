@@ -126,7 +126,7 @@
 </div>
 
 <script>
-  const DASHBOARD_REFRESH_MS = 10000;
+  const DASHBOARD_REFRESH_MS = Number(new URLSearchParams(window.location.search).get("refreshMs")) || 10000;
   const charts = {};
   const byId = (id) => document.getElementById(id);
   const j = (x) => JSON.stringify(x, null, 2);
@@ -256,8 +256,13 @@
   };
 
   byId("applyConfig").onclick = async () => {
-    const raw = byId("configJson").value;
-    const payload = JSON.parse(raw);
+    let payload;
+    try {
+      payload = JSON.parse(byId("configJson").value);
+    } catch (err) {
+      alert(`Invalid JSON: ${err.message}`);
+      return;
+    }
     await fetchJson("/config/rate-limit", {
       method: "POST",
       headers: { "Content-Type": "application/json" },

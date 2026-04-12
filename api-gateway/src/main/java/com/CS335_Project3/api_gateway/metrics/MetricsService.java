@@ -33,6 +33,7 @@ public class MetricsService {
     @Value("${metrics.max-events:20000}")
     private int maxEvents;
 
+    // Upper bound for event feed queries to protect Redis-backed dashboard reads.
     @Value("${metrics.events-query.max-limit:500}")
     private int maxEventQueryLimit;
 
@@ -200,6 +201,8 @@ public class MetricsService {
         return Map.of(
                 "lookbackMinutes", lookbackMinutes,
                 "totalMatched", matched.size(),
+                "requestedLimit", limit,
+                "effectiveLimit", safeLimit,
                 "returned", rows.size(),
                 "events", rows
         );
