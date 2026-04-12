@@ -120,7 +120,7 @@
     </div>
   </header>
 
-  <main id="dashboard-main-panel" role="tabpanel" class="max-w-[1700px] mx-auto px-4 lg:px-8 py-6 lg:py-8 space-y-6">
+  <main id="dashboard-main-panel" role="tabpanel" aria-labelledby="time-pill-1h" class="max-w-[1700px] mx-auto px-4 lg:px-8 py-6 lg:py-8 space-y-6">
 
     <section class="surface rounded-3xl p-5 lg:p-7 fade-up">
       <div class="flex flex-wrap items-start justify-between gap-4">
@@ -682,11 +682,15 @@
   function renderRiskTable(risky, events) {
     let rows = [...(risky || [])];
     const f = $('riskFilter').value;
+    const eventByClient = new Map();
+    events.forEach((e) => {
+      if (e?.apiKey && !eventByClient.has(e.apiKey)) eventByClient.set(e.apiKey, e);
+    });
     rows = rows.map(r => {
       const sev = r.riskScore >= 70 ? 'high' : r.riskScore >= 40 ? 'medium' : 'low';
       const totalReq = Number(r.totalRequests || r.count || 0);
       const conf = calculateConfidenceScore(r.riskScore, totalReq);
-      const region = regionFromIp((events.find(e => e.apiKey === r.clientId) || {}).ip);
+      const region = regionFromIp((eventByClient.get(r.clientId) || {}).ip);
       const keyHealth = (r.blockedRate || 0) > 45 ? 'degraded' : (r.blockedRate || 0) > 20 ? 'warning' : 'healthy';
       return Object.assign({}, r, { sev, conf, region, keyHealth });
     });
@@ -707,7 +711,7 @@
           ? '<span class="badge bg-amber-50 text-amber-600">Warning</span>'
           : '<span class="badge bg-rose-50 text-rose-600">Degraded</span>';
 
-      return `<tr class="table-row border-b border-slate-100 ${selectedClient === r.clientId ? 'selected' : ''}" data-client="${r.clientId}">
+      return `<tr class="table-row border-b border-slate-100 ${selectedClient === r.clientId ? 'selected' : ''}" data-client="${r.clientId}" tabindex="0" role="button" aria-label="Open details for client ${r.clientId}">
         <td class="px-4 py-3 font-mono">${r.clientId}</td>
         <td class="px-4 py-3">${sevBadge}</td>
         <td class="px-4 py-3 tabular-nums font-semibold text-orange-500">${Number(r.riskScore).toFixed(1)}</td>
@@ -721,10 +725,17 @@
     }).join('');
 
     tb.querySelectorAll('tr[data-client]').forEach(tr => {
-      tr.onclick = () => {
+      const openDetails = () => {
         const c = tr.dataset.client;
         const row = rows.find(x => x.clientId === c);
         loadClientDetails(row);
+      };
+      tr.onclick = openDetails;
+      tr.onkeydown = (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          openDetails();
+        }
       };
     });
   }
@@ -1006,6 +1017,7 @@
       b.classList.toggle('text-slate-900', active);
       b.setAttribute('aria-selected', active ? 'true' : 'false');
       b.tabIndex = active ? 0 : -1;
+      if (active) $('dashboard-main-panel').setAttribute('aria-labelledby', b.id);
     });
   }
 
