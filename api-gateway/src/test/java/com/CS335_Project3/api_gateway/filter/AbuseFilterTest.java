@@ -157,4 +157,31 @@ class AbuseFilterTest {
         assertThat(response.getStatus()).isEqualTo(200);
         assertThat(chain.getRequest()).isNotNull();
     }
+
+    @Test
+    @DisplayName("/metrics/dashboard/events path bypasses abuse detection")
+    void metricsDashboardEventsPath_bypasses() throws Exception {
+        MockHttpServletRequest request   = buildRequest(VALID_KEY, "/metrics/dashboard/events");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        MockFilterChain chain            = new MockFilterChain();
+
+        filter.doFilterInternal(request, response, chain);
+
+        assertThat(response.getStatus()).isEqualTo(200);
+        assertThat(chain.getRequest()).isNotNull();
+    }
+
+    @Test
+    @DisplayName("/metrics/dashboard/events with query parameters bypasses abuse detection")
+    void metricsDashboardEventsPathWithQueryParams_bypasses() throws Exception {
+        MockHttpServletRequest request   = buildRequest(VALID_KEY, "/metrics/dashboard/events");
+        request.setQueryString("minutes=60&status=429");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        MockFilterChain chain            = new MockFilterChain();
+
+        filter.doFilterInternal(request, response, chain);
+
+        assertThat(response.getStatus()).isEqualTo(200);
+        assertThat(chain.getRequest()).isNotNull();
+    }
 }
