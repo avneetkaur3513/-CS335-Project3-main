@@ -53,6 +53,7 @@ public class ApiKeyFilter extends OncePerRequestFilter {
         if (EXCLUDED_PATHS.contains(path)
                 || path.startsWith("/dashboard/")
                 || path.startsWith("/metrics/dashboard/client/")
+                || path.startsWith("/metrics/dashboard/events")
                 || path.startsWith("/config/rate-limit/")) {
             filterChain.doFilter(request, response);
             return;
