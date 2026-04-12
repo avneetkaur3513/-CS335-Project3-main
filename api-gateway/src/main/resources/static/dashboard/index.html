@@ -84,7 +84,7 @@
   <header class="sticky top-0 z-50 border-b border-slate-200/80 bg-white/90 backdrop-blur-xl">
     <div class="max-w-[1700px] mx-auto px-4 lg:px-8 h-16 flex items-center gap-3">
       <div class="flex items-center gap-3 min-w-[220px]">
-        <div class="w-9 h-9 rounded-2xl bg-gradient-to-br from-blue-600 to-violet-600 flex items-center justify-center text-white font-bold">GI</div>
+        <div class="w-9 h-9 rounded-2xl bg-gradient-to-br from-blue-600 to-violet-600 flex items-center justify-center text-white font-bold" aria-label="Gateway Intelligence logo">GI</div>
         <div>
           <p class="text-[11px] uppercase tracking-[.18em] text-slate-400">Security Console</p>
           <p class="text-sm font-semibold text-slate-900">Gateway Intelligence</p>
@@ -150,7 +150,7 @@
       </div>
     </section>
 
-    <section id="kpiGrid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-8 gap-3"></section>
+    <section id="kpiGrid" aria-live="polite" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-8 gap-3"></section>
 
     <section class="grid grid-cols-1 xl:grid-cols-12 gap-4">
       <article class="xl:col-span-7 surface rounded-3xl p-5 lg:p-6 fade-up">
@@ -438,6 +438,7 @@
   }
 
   function setLoadingState() {
+    $('dashboard-main-panel').setAttribute('aria-busy', 'true');
     $('kpiGrid').innerHTML = Array.from({ length: 8 }).map(() =>
       '<article class="surface rounded-3xl p-4"><div class="h-3 w-24 rounded-lg skeleton mb-3"></div><div class="h-7 w-20 rounded-lg skeleton mb-2"></div><div class="h-2 rounded-lg skeleton"></div></article>'
     ).join('');
@@ -722,7 +723,7 @@
 
       const clientId = String(r.clientId || '');
       const clientAttr = encodeURIComponent(clientId);
-      return `<tr class="table-row border-b border-slate-100 ${selectedClient === r.clientId ? 'selected' : ''}" data-client="${clientAttr}" tabindex="0" role="button" aria-label="Open details for client ${escHtml(clientId)}">
+      return `<tr class="table-row border-b border-slate-100 ${selectedClient === r.clientId ? 'selected' : ''}" data-client="${clientAttr}" tabindex="0" aria-label="Open details for client ${escHtml(clientId)}">
         <td class="px-4 py-3 font-mono">${escHtml(clientId)}</td>
         <td class="px-4 py-3">${sevBadge}</td>
         <td class="px-4 py-3 tabular-nums font-semibold text-orange-500">${Number(r.riskScore).toFixed(1)}</td>
@@ -1018,6 +1019,7 @@
     events.forEach(e => { const r = regionFromIp(e.ip); regionCounts[r] = (regionCounts[r] || 0) + 1; });
     const topRegions = Object.entries(regionCounts).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([k,v]) => `${k} ${v}`).join(' · ');
     $('geoMeta').textContent = topRegions ? `Threat hotspots: ${topRegions}` : 'Threat hotspots: no data';
+    $('dashboard-main-panel').setAttribute('aria-busy', 'false');
   }
 
   async function loadConfig() {
@@ -1043,13 +1045,17 @@
       await loadDashboard();
     };
     btn.onkeydown = async (e) => {
-      if (!['ArrowRight', 'ArrowLeft'].includes(e.key)) return;
+      if (!['ArrowRight', 'ArrowLeft', 'Home', 'End'].includes(e.key)) return;
       e.preventDefault();
       const tabs = [...document.querySelectorAll('.time-pill')];
       const idx = tabs.indexOf(btn);
-      const next = e.key === 'ArrowRight'
-        ? tabs[(idx + 1) % tabs.length]
-        : tabs[(idx - 1 + tabs.length) % tabs.length];
+      const next = e.key === 'Home'
+        ? tabs[0]
+        : e.key === 'End'
+          ? tabs[tabs.length - 1]
+          : e.key === 'ArrowRight'
+            ? tabs[(idx + 1) % tabs.length]
+            : tabs[(idx - 1 + tabs.length) % tabs.length];
       next.focus();
       setTimePill(next.dataset.minutes);
       await loadDashboard();
