@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gateway Intelligence Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <style>
+    :root { --bg:#0b1020; --card:#131b31; --text:#e8edf8; --muted:#97a6c8; --accent:#4f8cff; --danger:#ff5e7d; --ok:#38d39f; }
+    * { box-sizing: border-box; font-family: Inter,Segoe UI,Arial,sans-serif; }
+    body { margin:0; background:radial-gradient(circle at top,#152446 0,#0b1020 60%); color:var(--text); }
+    .wrap { max-width:1400px; margin:0 auto; padding:24px; }
+    .head { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:16px; flex-wrap:wrap; }
+    .title { font-size:24px; font-weight:700; }
+    .toolbar { display:flex; gap:8px; align-items:center; }
+    select,button,input,textarea { background:#0f1730; color:var(--text); border:1px solid #2d3f6f; border-radius:10px; padding:8px 10px; }
+    button { cursor:pointer; }
+    .grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin-bottom:12px; }
+    .card { background:linear-gradient(180deg,#151f3a,#11172d); border:1px solid #263760; border-radius:16px; padding:14px; box-shadow:0 6px 30px rgba(0,0,0,.2); }
+    .k { color:var(--muted); font-size:12px; }
+    .v { font-size:28px; font-weight:700; margin-top:4px; }
+    .layout { display:grid; grid-template-columns:2fr 1fr; gap:12px; }
+    .row { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px; }
+    table { width:100%; border-collapse:collapse; font-size:13px; }
+    th,td { padding:8px; border-bottom:1px solid #233258; text-align:left; }
+    tr:hover { background:#14203e; cursor:pointer; }
+    .mono { font-family: ui-monospace,Menlo,Consolas,monospace; }
+    .muted { color:var(--muted); }
+    .danger { color:var(--danger); }
+    .ok { color:var(--ok); }
+    pre { white-space:pre-wrap; background:#0f1730; border:1px solid #2d3f6f; padding:10px; border-radius:10px; max-height:260px; overflow:auto; }
+    @media (max-width:1000px){ .grid{grid-template-columns:repeat(2,minmax(0,1fr));}.layout,.row{grid-template-columns:1fr;} }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <div class="title">Gateway Intelligence Dashboard</div>
+    <div class="toolbar">
+      <label for="minutes">Window</label>
+      <select id="minutes">
+        <option value="15">15m</option>
+        <option value="60" selected>60m</option>
+        <option value="360">6h</option>
+        <option value="1440">24h</option>
+      </select>
+      <button id="refreshBtn">Refresh</button>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card"><div class="k">Total Requests</div><div class="v" id="kTotal">0</div></div>
+    <div class="card"><div class="k">Allowed</div><div class="v ok" id="kAllowed">0</div></div>
+    <div class="card"><div class="k">Blocked</div><div class="v danger" id="kBlocked">0</div></div>
+    <div class="card"><div class="k">Avg Latency (ms)</div><div class="v" id="kLatency">0</div></div>
+  </div>
+
+  <div class="layout">
+    <div class="card"><canvas id="trafficChart" height="110"></canvas></div>
+    <div class="card"><canvas id="statusChart" height="110"></canvas></div>
+  </div>
+
+  <div class="row">
+    <div class="card"><canvas id="algoChart" height="120"></canvas></div>
+    <div class="card">
+      <div class="k" style="margin-bottom:8px">Top Risky Clients</div>
+      <table id="riskTable"><thead><tr><th>Client</th><th>Risk</th><th>Blocked%</th></tr></thead><tbody></tbody></table>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="card">
+      <div class="k" style="margin-bottom:8px">Per-Client Volume (Top)</div>
+      <table id="clientTable"><thead><tr><th>Client</th><th>Requests</th></tr></thead><tbody></tbody></table>
+    </div>
+    <div class="card">
+      <div class="k" style="margin-bottom:8px">Client Drilldown</div>
+      <pre id="clientDetails" class="mono muted">Click a client from the table.</pre>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="card">
+      <div class="k">Runtime Config (Download/Upload)</div>
+      <div style="display:flex;gap:8px;margin:8px 0">
+        <button id="downloadConfig">Download Config</button>
+        <button id="applyConfig">Apply Config JSON</button>
+      </div>
+      <textarea id="configJson" rows="10" style="width:100%" placeholder="Paste config JSON here"></textarea>
+    </div>
+  </div>
+</div>
+
+<script>
+  const charts = {};
+  const byId = (id) => document.getElementById(id);
+  const j = (x) => JSON.stringify(x, null, 2);
+
+  function setKpi(id, val){ byId(id).textContent = val; }
+
+  function renderTable(tableId, rows, mapper, clickCb){
+    const body = byId(tableId).querySelector("tbody");
+    body.innerHTML = "";
+    rows.forEach((r) => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = mapper(r);
+      if (clickCb) tr.onclick = () => clickCb(r);
+      body.appendChild(tr);
+    });
+  }
+
+  function upsertChart(id, type, data, options = {}){
+    if (charts[id]) charts[id].destroy();
+    charts[id] = new Chart(byId(id), { type, data, options });
+  }
+
+  async function fetchJson(url, options){
+    const res = await fetch(url, options);
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+  }
+
+  async function loadDashboard(){
+    const minutes = byId("minutes").value;
+    const data = await fetchJson(`/metrics/dashboard?minutes=${minutes}`);
+    const summary = data.summary || {};
+
+    setKpi("kTotal", summary.totalRequests ?? 0);
+    setKpi("kAllowed", summary.allowedRequests ?? 0);
+    setKpi("kBlocked", summary.blockedRequests ?? 0);
+    setKpi("kLatency", summary.avgLatencyMs ?? 0);
+
+    const ts = data.timeseries || {labels:[],requests:[],blocked:[],avgLatencyMs:[]};
+    upsertChart("trafficChart", "line", {
+      labels: ts.labels,
+      datasets: [
+        { label:"Requests", data: ts.requests, borderColor:"#4f8cff", backgroundColor:"rgba(79,140,255,.2)", tension:.3, fill:true },
+        { label:"Blocked", data: ts.blocked, borderColor:"#ff5e7d", backgroundColor:"rgba(255,94,125,.2)", tension:.3, fill:true }
+      ]
+    }, { responsive:true, maintainAspectRatio:false });
+
+    upsertChart("statusChart", "doughnut", {
+      labels: Object.keys(data.statusCodes || {}),
+      datasets: [{ data: Object.values(data.statusCodes || {}), backgroundColor:["#38d39f","#4f8cff","#ffb84f","#ff5e7d","#8a6bff","#8fc9ff"] }]
+    }, { responsive:true, maintainAspectRatio:false });
+
+    upsertChart("algoChart", "bar", {
+      labels: Object.keys(data.blocksByAlgorithm || {}),
+      datasets: [{ label:"Blocked Requests", data: Object.values(data.blocksByAlgorithm || {}), backgroundColor:"#ff5e7d" }]
+    }, { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}} });
+
+    renderTable("riskTable", data.riskyClients || [], (r) =>
+      `<td class="mono">${r.clientId}</td><td>${r.riskScore}</td><td>${r.blockedRate}%</td>`);
+
+    const clients = Object.entries(data.perClient || {}).map(([clientId, count]) => ({clientId, count}));
+    renderTable("clientTable", clients, (r) => `<td class="mono">${r.clientId}</td><td>${r.count}</td>`, loadClientDetails);
+  }
+
+  async function loadClientDetails(row){
+    const minutes = byId("minutes").value;
+    const details = await fetchJson(`/metrics/dashboard/client/${encodeURIComponent(row.clientId)}?minutes=${minutes}`);
+    byId("clientDetails").textContent = j(details);
+  }
+
+  async function loadConfig(){
+    const config = await fetchJson("/config/rate-limit");
+    byId("configJson").value = j(config);
+  }
+
+  byId("refreshBtn").onclick = async () => {
+    await loadDashboard();
+    await loadConfig();
+  };
+  byId("minutes").onchange = loadDashboard;
+
+  byId("downloadConfig").onclick = async () => {
+    const config = await fetchJson("/config/rate-limit");
+    const blob = new Blob([j(config)], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "rate-limit-config.json";
+    a.click();
+  };
+
+  byId("applyConfig").onclick = async () => {
+    const raw = byId("configJson").value;
+    const payload = JSON.parse(raw);
+    await fetchJson("/config/rate-limit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    await loadDashboard();
+    await loadConfig();
+  };
+
+  (async () => {
+    await loadDashboard();
+    await loadConfig();
+    setInterval(loadDashboard, 10000);
+  })().catch(err => alert(err.message));
+</script>
+</body>
+</html>

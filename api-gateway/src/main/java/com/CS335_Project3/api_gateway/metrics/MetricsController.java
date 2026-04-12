@@ -3,6 +3,7 @@ package com.CS335_Project3.api_gateway.metrics;
 import com.CS335_Project3.api_gateway.logging.RequestLogger;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.CS335_Project3.api_gateway.logging.LogEntry;
@@ -109,5 +110,18 @@ public class MetricsController {
     @GetMapping("/suspicious")
     public Set<String> getSuspiciousIps() {
         return botDetector.getSuspiciousIps();
+    }
+
+    // GET /metrics/dashboard?minutes=60
+    @GetMapping("/dashboard")
+    public Map<String, Object> dashboardData(@RequestParam(defaultValue = "60") int minutes) {
+        return metricsService.getDashboardData(minutes);
+    }
+
+    // GET /metrics/dashboard/client/{clientId}?minutes=60
+    @GetMapping("/dashboard/client/{clientId}")
+    public Map<String, Object> clientBreakdown(@PathVariable String clientId,
+                                               @RequestParam(defaultValue = "60") int minutes) {
+        return metricsService.getClientDetails(clientId, minutes);
     }
 }

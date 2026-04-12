@@ -9,7 +9,7 @@ services:
     networks:
       - cs335-net
 
-  gateway:
+  gateway-1:
     build: ./api-gateway
     ports:
       - "8080:8080"
@@ -24,13 +24,33 @@ services:
     networks:
       - cs335-net
 
+  gateway-2:
+    build: ./api-gateway
+    ports:
+      - "8082:8080"
+    environment:
+      - BACKEND_URL=http://backend:8081/api/
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - backend
+      - redis
+    networks:
+      - cs335-net
+
   redis:
     image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
     ports:
       - "6379:6379"
+    volumes:
+      - redis-data:/data
     networks:
       - cs335-net
 
 networks:
   cs335-net:
     driver: bridge
+
+volumes:
+  redis-data:

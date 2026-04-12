@@ -37,7 +37,7 @@ public class LoggingFilter extends OncePerRequestFilter {
 
     //paths excluded from logging so browser generated requests dont pollute the metrics data
     private static final java.util.List<String> EXCLUDED_PATHS =
-            java.util.List.of("/health", "/metrics", "/metrics/logs", "/favicon.ico");
+            java.util.List.of("/health", "/metrics", "/metrics/logs", "/metrics/dashboard", "/favicon.ico", "/dashboard");
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
@@ -46,7 +46,10 @@ public class LoggingFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         //skips logging for internal/static paths
-        if (EXCLUDED_PATHS.contains(request.getRequestURI())) {
+        if (EXCLUDED_PATHS.contains(request.getRequestURI())
+                || request.getRequestURI().startsWith("/dashboard/")
+                || request.getRequestURI().startsWith("/metrics/dashboard/client/")
+                || request.getRequestURI().startsWith("/config/rate-limit/")) {
             chain.doFilter(request, response);
             return;
         }
@@ -56,22 +59,34 @@ public class LoggingFilter extends OncePerRequestFilter {
                 new ContentCachingResponseWrapper(response);
 
         //grab request info
+        long startedAt = System.currentTimeMillis();
         String apiKey = request.getHeader("X-API-Key");
         String path   = request.getRequestURI();
+        String tenantId = request.getHeader("X-Tenant-Id");
+        String appId = request.getHeader("X-App-Id");
 
         if (apiKey == null || apiKey.isBlank()) {
             apiKey = "MISSING";
         }
+        if (tenantId == null || tenantId.isBlank()) {
+            tenantId = "default";
+        }
+        if (appId == null || appId.isBlank()) {
+            appId = "default";
+        }
 
         //gets the client IP and which rate limiting algorithm they are assigned to
         String ip        = request.getRemoteAddr();
-        String algorithm = rateLimiter.getAlgorithm(apiKey.toLowerCase());
+        String algorithm = rateLimiter.getAlgorithm(apiKey.toLowerCase(), tenantId.toLowerCase(), appId.toLowerCase());
 
         //records IP for bot detection
         botDetector.record(ip);
         if (botDetector.isSuspicious(ip)) {
-            requestLogger.log(apiKey, ip, path, "FLAGGED", "suspected_bot", algorithm);
-            metricsService.recordRequest(apiKey, true);
+            wrappedResponse.setStatus(403);
+            wrappedResponse.setContentType("application/json");
+            wrappedResponse.getWriter().write("{\"status\":403,\"error\":\"Forbidden\",\"message\":\"Suspicious traffic detected.\"}");
+            requestLogger.log(apiKey, ip, path, "BLOCKED", "suspected_bot", algorithm, tenantId, appId, 403, 0L);
+            metricsService.recordRequest(apiKey, tenantId, appId, ip, path, "BLOCKED", "suspected_bot", algorithm, 403, 0L);
             wrappedResponse.copyBodyToResponse();
             return;
         }
@@ -99,12 +114,11 @@ public class LoggingFilter extends OncePerRequestFilter {
             reason   = "ok";
         }
 
-        //returns true if the request was blocked for any reason, false if it was allowed through
-        boolean wasBlocked = decision.equals("BLOCKED");
+        long latencyMs = Math.max(0L, System.currentTimeMillis() - startedAt);
 
         //records the full request details in the log and update the metrics counters
-        requestLogger.log(apiKey, ip, path, decision, reason, algorithm);
-        metricsService.recordRequest(apiKey, wasBlocked);
+        requestLogger.log(apiKey, ip, path, decision, reason, algorithm, tenantId, appId, status, latencyMs);
+        metricsService.recordRequest(apiKey, tenantId, appId, ip, path, decision, reason, algorithm, status, latencyMs);
 
         //copies the response body back so the client still receives it
         //(ContentCachingResponseWrapper holds it in memory)
