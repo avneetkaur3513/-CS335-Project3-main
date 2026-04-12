@@ -84,7 +84,7 @@
   <header class="sticky top-0 z-50 border-b border-slate-200/80 bg-white/90 backdrop-blur-xl">
     <div class="max-w-[1700px] mx-auto px-4 lg:px-8 h-16 flex items-center gap-3">
       <div class="flex items-center gap-3 min-w-[220px]">
-        <span class="w-9 h-9 rounded-2xl bg-gradient-to-br from-blue-600 to-violet-600 flex items-center justify-center text-white font-bold" role="img" aria-label="Gateway Intelligence logo">GI</span>
+        <span class="w-9 h-9 rounded-2xl bg-gradient-to-br from-blue-600 to-violet-600 flex items-center justify-center text-white font-bold">GI</span>
         <div>
           <p class="text-[11px] uppercase tracking-[.18em] text-slate-400">Security Console</p>
           <p class="text-sm font-semibold text-slate-900">Gateway Intelligence</p>
@@ -385,7 +385,7 @@
   let compareMode = 'current';
   let unreadNotifications = 3;
   // Composite confidence scoring constants:
-  // finalScore = clamp(BASELINE..MAX, riskScore*RISK_WEIGHT + min(VOLUME_CAP, log10(requests+1)*VOLUME_SCALE)).
+  // finalScore = clamp(CONFIDENCE_BASELINE..CONFIDENCE_MAX, riskScore*CONFIDENCE_RISK_WEIGHT + min(CONFIDENCE_VOLUME_CAP, log10(requests+1)*CONFIDENCE_VOLUME_SCALE)).
   const CONFIDENCE_BASELINE = 45;
   const CONFIDENCE_MAX = 99;
   const CONFIDENCE_RISK_WEIGHT = 0.72;
@@ -461,7 +461,7 @@
   function showToast(message) {
     const host = $('toastHost');
     if (!host) return;
-    host.innerHTML = `<div class="surface rounded-2xl px-3 py-2 text-xs text-slate-700 shadow-soft">${escHtml(message)}</div>`;
+    host.innerHTML = `<div role="status" class="surface rounded-2xl px-3 py-2 text-xs text-slate-700 shadow-soft">${escHtml(message)}</div>`;
     setTimeout(() => {
       if (host.textContent?.includes(message)) host.innerHTML = '';
     }, 2200);
@@ -546,6 +546,7 @@
   }
 
   function regionFromIp(ip) {
+    // Fallback-only mapping for UI grouping when backend geo-IP enrichment is unavailable.
     if (!ip) return 'global';
     // Deterministic fallback mapping: take first numeric IP segment, then modulo into 5 region buckets.
     // This keeps map rendering stable when geo-IP enrichment is unavailable in backend data.
@@ -739,7 +740,7 @@
 
       const clientId = String(r.clientId || '');
       const clientAttr = encodeURIComponent(clientId);
-      return `<tr class="table-row border-b border-slate-100 ${selectedClient === r.clientId ? 'selected' : ''}" data-client="${clientAttr}" tabindex="0" role="button">
+      return `<tr class="table-row border-b border-slate-100 ${selectedClient === r.clientId ? 'selected' : ''}" data-client="${clientAttr}">
         <td class="px-4 py-3 font-mono">${escHtml(clientId)}</td>
         <td class="px-4 py-3">${sevBadge}</td>
         <td class="px-4 py-3 tabular-nums font-semibold text-orange-500">${Number(r.riskScore).toFixed(1)}</td>
@@ -748,18 +749,18 @@
         <td class="px-4 py-3">${r.region}</td>
         <td class="px-4 py-3">${keyBadge}</td>
         <td class="px-4 py-3 tabular-nums">${r.conf}%</td>
-        <td class="px-4 py-3"><button class="ghost-btn rounded-lg px-2 py-1 text-[11px] view-detail">View details</button></td>
+        <td class="px-4 py-3"><button class="ghost-btn rounded-lg px-2 py-1 text-[11px] view-detail" data-client="${clientAttr}">View details</button></td>
       </tr>`;
     }).join('');
 
-    tb.querySelectorAll('tr[data-client]').forEach(tr => {
+    tb.querySelectorAll('button.view-detail[data-client]').forEach(btn => {
       const openDetails = () => {
-        const c = decodeURIComponent(tr.dataset.client || '');
+        const c = decodeURIComponent(btn.dataset.client || '');
         const row = rows.find(x => x.clientId === c);
         loadClientDetails(row);
       };
-      tr.onclick = openDetails;
-      tr.onkeydown = (e) => {
+      btn.onclick = openDetails;
+      btn.onkeydown = (e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
           openDetails();
@@ -1061,8 +1062,13 @@
       await loadDashboard();
     };
     btn.onkeydown = async (e) => {
-      if (!['ArrowRight', 'ArrowLeft', 'Home', 'End'].includes(e.key)) return;
+      if (!['ArrowRight', 'ArrowLeft', 'Home', 'End', 'Enter', ' '].includes(e.key)) return;
       e.preventDefault();
+      if (e.key === 'Enter' || e.key === ' ') {
+        setTimePill(btn.dataset.minutes);
+        await loadDashboard();
+        return;
+      }
       const tabs = [...document.querySelectorAll('.time-pill')];
       const idx = tabs.indexOf(btn);
       const next = e.key === 'Home'
