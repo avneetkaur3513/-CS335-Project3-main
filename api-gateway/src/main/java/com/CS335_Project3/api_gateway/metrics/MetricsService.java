@@ -283,13 +283,13 @@ public class MetricsService {
                     double blockedRate = total == 0 ? 0.0 : ((double) blocked / (double) total) * 100.0;
                     double volumeFactor = Math.min(100.0, total);
                     double riskScore = round((blockedRate * 0.7) + (volumeFactor * 0.3));
-                    return Map.of(
-                            "clientId", entry.getKey(),
-                            "riskScore", riskScore,
-                            "totalRequests", total,
-                            "blockedRequests", blocked,
-                            "blockedRate", round(blockedRate)
-                    );
+                    Map<String, Object> row = new LinkedHashMap<>();
+                    row.put("clientId", entry.getKey());
+                    row.put("riskScore", riskScore);
+                    row.put("totalRequests", total);
+                    row.put("blockedRequests", blocked);
+                    row.put("blockedRate", round(blockedRate));
+                    return row;
                 })
                 .sorted((a, b) -> Double.compare((Double) b.get("riskScore"), (Double) a.get("riskScore")))
                 .limit(10)
