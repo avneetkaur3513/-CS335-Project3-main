@@ -124,4 +124,17 @@ public class MetricsController {
                                                @RequestParam(defaultValue = "60") int minutes) {
         return metricsService.getClientDetails(clientId, minutes);
     }
+
+    // GET /metrics/dashboard/events?minutes=60&tenant=...&app=...&client=...&ip=...&status=429&algorithm=token&limit=100
+    @GetMapping("/dashboard/events")
+    public Map<String, Object> dashboardEvents(@RequestParam(defaultValue = "60") int minutes,
+                                               @RequestParam(required = false) String tenant,
+                                               @RequestParam(required = false) String app,
+                                               @RequestParam(required = false) String client,
+                                               @RequestParam(required = false) String ip,
+                                               @RequestParam(required = false) Integer status,
+                                               @RequestParam(required = false) String algorithm,
+                                               @RequestParam(defaultValue = "100") int limit) {
+        return metricsService.getFilteredEvents(minutes, tenant, app, client, ip, status, algorithm, limit);
+    }
 }

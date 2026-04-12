@@ -150,6 +150,58 @@ public class MetricsService {
         );
     }
 
+    public Map<String, Object> getFilteredEvents(int lookbackMinutes,
+                                                 String tenant,
+                                                 String app,
+                                                 String client,
+                                                 String ip,
+                                                 Integer status,
+                                                 String algorithm,
+                                                 int limit) {
+        String tenantFilter = normalizeFilter(tenant);
+        String appFilter = normalizeFilter(app);
+        String clientFilter = normalizeFilter(client);
+        String ipFilter = normalizeFilter(ip);
+        String algorithmFilter = normalizeFilter(algorithm);
+        int safeLimit = Math.max(1, Math.min(limit, 500));
+
+        List<Event> matched = filterByMinutes(getRecentEvents(), lookbackMinutes).stream()
+                .filter(e -> tenantFilter == null || e.tenantId().equals(tenantFilter))
+                .filter(e -> appFilter == null || e.appId().equals(appFilter))
+                .filter(e -> clientFilter == null || e.apiKey().equals(clientFilter))
+                .filter(e -> ipFilter == null || e.ip().equals(ipFilter))
+                .filter(e -> status == null || e.statusCode() == status)
+                .filter(e -> algorithmFilter == null || e.algorithm().equals(algorithmFilter))
+                .sorted(Comparator.comparingLong(Event::timestamp).reversed())
+                .toList();
+
+        List<Map<String, Object>> rows = matched.stream()
+                .limit(safeLimit)
+                .map(e -> {
+                    Map<String, Object> row = new LinkedHashMap<>();
+                    row.put("timestamp", e.timestamp());
+                    row.put("tenantId", e.tenantId());
+                    row.put("appId", e.appId());
+                    row.put("apiKey", e.apiKey());
+                    row.put("ip", e.ip());
+                    row.put("path", e.path());
+                    row.put("statusCode", e.statusCode());
+                    row.put("decision", e.decision());
+                    row.put("reason", e.reason());
+                    row.put("algorithm", e.algorithm());
+                    row.put("latencyMs", e.latencyMs());
+                    return row;
+                })
+                .toList();
+
+        return Map.of(
+                "lookbackMinutes", lookbackMinutes,
+                "totalMatched", matched.size(),
+                "returned", rows.size(),
+                "events", rows
+        );
+    }
+
     public List<Map<String, Object>> getRecentEventsForExport(int limit) {
         List<Event> events = getRecentEvents();
         return events.stream()
@@ -267,6 +319,13 @@ public class MetricsService {
     private String normalize(String value, String fallback) {
         String out = (value == null || value.isBlank()) ? fallback : value.trim();
         return out.toLowerCase();
+    }
+
+    private String normalizeFilter(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        return value.trim().toLowerCase();
     }
 
     private record Event(long timestamp,

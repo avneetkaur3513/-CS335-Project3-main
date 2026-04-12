@@ -21,6 +21,7 @@
     .v { font-size:28px; font-weight:700; margin-top:4px; }
     .layout { display:grid; grid-template-columns:2fr 1fr; gap:12px; }
     .row { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px; }
+    .full { grid-template-columns:1fr; }
     table { width:100%; border-collapse:collapse; font-size:13px; }
     th,td { padding:8px; border-bottom:1px solid #233258; text-align:left; }
     tr:hover { background:#14203e; cursor:pointer; }
@@ -29,6 +30,9 @@
     .danger { color:var(--danger); }
     .ok { color:var(--ok); }
     pre { white-space:pre-wrap; background:#0f1730; border:1px solid #2d3f6f; padding:10px; border-radius:10px; max-height:260px; overflow:auto; }
+    .filters { display:grid; grid-template-columns:repeat(8,minmax(0,1fr)); gap:8px; margin:8px 0 12px; }
+    .filters input { width:100%; }
+    .table-wrap { max-height:320px; overflow:auto; border:1px solid #233258; border-radius:10px; }
     @media (max-width:1000px){ .grid{grid-template-columns:repeat(2,minmax(0,1fr));}.layout,.row{grid-template-columns:1fr;} }
   </style>
 </head>
@@ -79,6 +83,36 @@
     </div>
   </div>
 
+  <div class="row full">
+    <div class="card">
+      <div class="k">Filtered Event Feed</div>
+      <div class="filters">
+        <input id="fTenant" placeholder="tenant" />
+        <input id="fApp" placeholder="app" />
+        <input id="fClient" placeholder="client/api key" />
+        <input id="fIp" placeholder="ip" />
+        <input id="fStatus" placeholder="status (e.g. 429)" />
+        <input id="fAlgorithm" placeholder="algorithm" />
+        <input id="fLimit" placeholder="limit (default 100)" />
+        <div style="display:flex;gap:8px">
+          <button id="applyEventFilters">Apply</button>
+          <button id="clearEventFilters">Clear</button>
+        </div>
+      </div>
+      <div class="muted" id="eventMeta" style="margin-bottom:8px"></div>
+      <div class="table-wrap">
+        <table id="eventTable">
+          <thead>
+          <tr>
+            <th>Time</th><th>Tenant</th><th>App</th><th>Client</th><th>IP</th><th>Status</th><th>Algorithm</th><th>Latency</th><th>Decision</th><th>Path</th>
+          </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
   <div class="row">
     <div class="card">
       <div class="k">Runtime Config (Download/Upload)</div>
@@ -95,6 +129,7 @@
   const charts = {};
   const byId = (id) => document.getElementById(id);
   const j = (x) => JSON.stringify(x, null, 2);
+  const fmtTs = (ts) => new Date(ts).toISOString();
 
   function setKpi(id, val){ byId(id).textContent = val; }
 
@@ -162,6 +197,33 @@
     byId("clientDetails").textContent = j(details);
   }
 
+  function eventQuery(){
+    const params = new URLSearchParams();
+    params.set("minutes", byId("minutes").value);
+    const tenant = byId("fTenant").value.trim();
+    const app = byId("fApp").value.trim();
+    const client = byId("fClient").value.trim();
+    const ip = byId("fIp").value.trim();
+    const status = byId("fStatus").value.trim();
+    const algorithm = byId("fAlgorithm").value.trim();
+    const limit = byId("fLimit").value.trim();
+    if (tenant) params.set("tenant", tenant);
+    if (app) params.set("app", app);
+    if (client) params.set("client", client);
+    if (ip) params.set("ip", ip);
+    if (status) params.set("status", status);
+    if (algorithm) params.set("algorithm", algorithm);
+    if (limit) params.set("limit", limit);
+    return params.toString();
+  }
+
+  async function loadEventFeed(){
+    const data = await fetchJson(`/metrics/dashboard/events?${eventQuery()}`);
+    byId("eventMeta").textContent = `Matched: ${data.totalMatched ?? 0} | Showing: ${data.returned ?? 0}`;
+    renderTable("eventTable", data.events || [], (r) =>
+      `<td class="mono">${fmtTs(r.timestamp)}</td><td>${r.tenantId}</td><td>${r.appId}</td><td class="mono">${r.apiKey}</td><td class="mono">${r.ip}</td><td>${r.statusCode}</td><td>${r.algorithm}</td><td>${r.latencyMs}ms</td><td>${r.decision}</td><td class="mono">${r.path}</td>`);
+  }
+
   async function loadConfig(){
     const config = await fetchJson("/config/rate-limit");
     byId("configJson").value = j(config);
@@ -169,9 +231,19 @@
 
   byId("refreshBtn").onclick = async () => {
     await loadDashboard();
+    await loadEventFeed();
     await loadConfig();
   };
-  byId("minutes").onchange = loadDashboard;
+  byId("minutes").onchange = async () => {
+    await loadDashboard();
+    await loadEventFeed();
+  };
+
+  byId("applyEventFilters").onclick = loadEventFeed;
+  byId("clearEventFilters").onclick = async () => {
+    ["fTenant","fApp","fClient","fIp","fStatus","fAlgorithm","fLimit"].forEach(id => byId(id).value = "");
+    await loadEventFeed();
+  };
 
   byId("downloadConfig").onclick = async () => {
     const config = await fetchJson("/config/rate-limit");
@@ -191,13 +263,18 @@
       body: JSON.stringify(payload)
     });
     await loadDashboard();
+    await loadEventFeed();
     await loadConfig();
   };
 
   (async () => {
     await loadDashboard();
+    await loadEventFeed();
     await loadConfig();
-    setInterval(loadDashboard, 10000);
+    setInterval(async () => {
+      await loadDashboard();
+      await loadEventFeed();
+    }, 10000);
   })().catch(err => alert(err.message));
 </script>
 </body>
