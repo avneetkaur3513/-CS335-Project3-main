@@ -31,7 +31,7 @@ public class ApiKeyFilter extends OncePerRequestFilter {
     //"/metrics" : lets metrics endpoints work without a key (allows display in http://localhost:8080/metrics).
     //"/metrics/logs" : lets logs endpoints (/export, /suspicious, /filter...) work without a key (allows display in http://localhost:8080/metrics/logs...).
     private static final List<String> EXCLUDED_PATHS =
-        List.of("/health", "/favicon.ico", "/metrics", "/metrics/logs", "/metrics/logs/filter", "/metrics/logs/export/json", "/metrics/logs/export/csv", "/metrics/suspicious", "/metrics/dashboard", "/dashboard", "/config/rate-limit");
+        List.of("/health", "/favicon.ico", "/metrics", "/metrics/logs", "/metrics/logs/filter", "/metrics/logs/export/json", "/metrics/logs/export/csv", "/metrics/suspicious", "/metrics/dashboard", "/metrics/dashboard/events", "/dashboard", "/config/rate-limit");
 
     private final ApiKeyConfig apiKeyConfig;
     private final RateLimiter rateLimiter;
