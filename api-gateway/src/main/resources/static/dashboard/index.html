@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Gateway Intelligence Dashboard</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
@@ -639,13 +639,34 @@
     const scColors = ["#10b981","#3b82f6","#f59e0b","#f43f5e","#8b5cf6","#06b6d4","#ec4899","#f97316"];
     upsert("statusChart", "doughnut", { labels:sk, datasets:[{ data:sv, backgroundColor:scColors.slice(0,sk.length), borderWidth:2, borderColor:"white" }] });
 
-    // Status legend
+    // Status legend (using DOM creation to avoid XSS with API-supplied keys)
     const lgEl = $("statusLegend");
     lgEl.innerHTML = "";
     const tot2 = sv.reduce((a,b)=>a+b,0);
     sk.forEach((k,i) => {
       const pct = tot2>0 ? Math.round(sv[i]/tot2*100) : 0;
-      lgEl.innerHTML += `<div class="flex items-center justify-between"><span class="flex items-center gap-1.5"><span style="background:${scColors[i]}" class="w-2 h-2 rounded-full inline-block shrink-0"></span><span class="text-slate-600 dark:text-slate-400">${k}</span></span><span class="font-semibold text-slate-700 dark:text-slate-300 tabular-nums ml-3">${sv[i]} <span class="font-normal text-slate-400">(${pct}%)</span></span></div>`;
+      const row = document.createElement("div");
+      row.className = "flex items-center justify-between";
+      const left = document.createElement("span");
+      left.className = "flex items-center gap-1.5";
+      const dot = document.createElement("span");
+      dot.className = "w-2 h-2 rounded-full inline-block shrink-0";
+      dot.style.background = scColors[i] || "#94a3b8";
+      const lbl = document.createElement("span");
+      lbl.className = "text-slate-600 dark:text-slate-400";
+      lbl.textContent = k;
+      left.appendChild(dot);
+      left.appendChild(lbl);
+      const right = document.createElement("span");
+      right.className = "font-semibold text-slate-700 dark:text-slate-300 tabular-nums ml-3";
+      right.textContent = sv[i] + " ";
+      const pctSpan = document.createElement("span");
+      pctSpan.className = "font-normal text-slate-400";
+      pctSpan.textContent = "(" + pct + "%)";
+      right.appendChild(pctSpan);
+      row.appendChild(left);
+      row.appendChild(right);
+      lgEl.appendChild(row);
     });
 
     // Algo bar (horizontal)
@@ -761,13 +782,30 @@
       $("cdLatency").textContent = (sm.avgLatencyMs ?? 0) + " ms";
       $("clientMeta").textContent = "Last " + mins + " min";
 
-      // Status code badges
+      // Status code badges (using inline styles to avoid dynamic Tailwind class construction)
       const scEl = $("cdStatusCodes");
       scEl.innerHTML = "";
-      const colorFor = c => { const n=parseInt(c); return n>=200&&n<300?"emerald":n===403?"amber":n===429?"rose":n>=500?"red":"slate"; };
-      Object.entries(det.statusCodes||{}).slice(0,8).forEach(([c,v]) => {
-        const col = colorFor(c);
-        scEl.innerHTML += `<span class="inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-md bg-${col}-50 dark:bg-${col}-900/20 text-${col}-600 dark:text-${col}-400">${c} <span class="ml-1 font-normal opacity-75">${v}</span></span>`;
+      const scStyle = (code) => {
+        const n = parseInt(code);
+        if (n>=200&&n<300) return { bg:"#d1fae5", color:"#065f46" };
+        if (n===403)        return { bg:"#fef3c7", color:"#92400e" };
+        if (n===429)        return { bg:"#fff1f2", color:"#be123c" };
+        if (n>=500)         return { bg:"#fee2e2", color:"#991b1b" };
+        return { bg:"#f1f5f9", color:"#475569" };
+      };
+      Object.entries(det.statusCodes||{}).slice(0,8).forEach(([code, count]) => {
+        const style = scStyle(code);
+        const span = document.createElement("span");
+        span.className = "inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-md";
+        span.style.background = style.bg;
+        span.style.color = style.color;
+        span.textContent = code + " ";
+        const cnt = document.createElement("span");
+        cnt.style.opacity = "0.7";
+        cnt.style.fontWeight = "normal";
+        cnt.textContent = count;
+        span.appendChild(cnt);
+        scEl.appendChild(span);
       });
 
       // Mini chart
