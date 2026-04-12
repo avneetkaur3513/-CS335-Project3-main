@@ -19,6 +19,19 @@ public class RequestLogger {
         logs.add(new LogEntry(apiKey, ip, path, decision, reason, algorithm));
     }
 
+    public void log(String apiKey,
+                    String ip,
+                    String path,
+                    String decision,
+                    String reason,
+                    String algorithm,
+                    String tenantId,
+                    String appId,
+                    int statusCode,
+                    long latencyMs) {
+        logs.add(new LogEntry(apiKey, ip, path, decision, reason, algorithm, tenantId, appId, statusCode, latencyMs));
+    }
+
     //returns last 100 log entries as a List
     public List<LogEntry> getLogs() {
         List<LogEntry> all = new ArrayList<>(logs); // copy queue into a list

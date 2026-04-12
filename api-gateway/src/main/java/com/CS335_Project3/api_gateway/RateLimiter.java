@@ -1,14 +1,17 @@
 package com.CS335_Project3.api_gateway;
 
 import org.springframework.stereotype.Component;
-import java.util.HashMap;
 import java.util.Map;
 import com.CS335_Project3.api_gateway.config.TenantRateLimitConfig;
+import com.CS335_Project3.api_gateway.config.RuntimeRateLimitPolicy;
+import com.CS335_Project3.api_gateway.config.RuntimeRateLimitPolicyService;
 import com.CS335_Project3.api_gateway.ratelimiter.RateLimiterStrategy;
 import com.CS335_Project3.api_gateway.ratelimiter.TokenBucketRateLimiterStrategy;
 import com.CS335_Project3.api_gateway.ratelimiter.FixedWindowRateLimiterStrategy;
 import com.CS335_Project3.api_gateway.ratelimiter.SlidingWindowRateLimiterStrategy;
+import com.CS335_Project3.api_gateway.ratelimiter.LeakyBucketRateLimiterStrategy;
 import org.springframework.beans.factory.annotation.Autowired;
+import java.util.HashMap;
 
 /**
  * Main entry point for rate limiting logic.
@@ -31,9 +34,11 @@ public class RateLimiter {
     private final TokenBucketRateLimiterStrategy tokenBucketStrategy;
     private final FixedWindowRateLimiterStrategy fixedWindowStrategy;
     private final SlidingWindowRateLimiterStrategy slidingWindowStrategy;
+    private final LeakyBucketRateLimiterStrategy leakyBucketStrategy;
 
     // Config for hierarchical policies
     private final TenantRateLimitConfig tenantRateLimitConfig;
+    private final RuntimeRateLimitPolicyService runtimeRateLimitPolicyService;
 
     /*
         This map stores which algorithm each client should use
@@ -41,7 +46,7 @@ public class RateLimiter {
         Key   = clientId (API key)
         Value = algorithm name
     */
-    private final Map<String, String> clientAlgorithms = new HashMap<>();
+    private final Map<String, String> fallbackClientAlgorithms = new HashMap<>();
 
     /*
         This map stores the actual strategies
@@ -59,7 +64,7 @@ public class RateLimiter {
         Key   = clientId (API key)
         Value = max allowed requests / capacity
     */
-    private final Map<String, Integer> clientLimits = new HashMap<>();
+    private final Map<String, Integer> fallbackClientLimits = new HashMap<>();
 
     /*
         Primary constructor used by Spring (dependency injection)
@@ -73,12 +78,16 @@ public class RateLimiter {
     public RateLimiter(TokenBucketRateLimiterStrategy tokenBucketStrategy,
                        FixedWindowRateLimiterStrategy fixedWindowStrategy,
                        SlidingWindowRateLimiterStrategy slidingWindowStrategy,
-                       TenantRateLimitConfig tenantRateLimitConfig) {
+                       LeakyBucketRateLimiterStrategy leakyBucketRateLimiterStrategy,
+                       TenantRateLimitConfig tenantRateLimitConfig,
+                       RuntimeRateLimitPolicyService runtimeRateLimitPolicyService) {
 
         this.tokenBucketStrategy = tokenBucketStrategy;
         this.fixedWindowStrategy = fixedWindowStrategy;
         this.slidingWindowStrategy = slidingWindowStrategy;
+        this.leakyBucketStrategy = leakyBucketRateLimiterStrategy;
         this.tenantRateLimitConfig = tenantRateLimitConfig;
+        this.runtimeRateLimitPolicyService = runtimeRateLimitPolicyService;
 
         registerStrategies();
         registerClientPolicies();
@@ -91,6 +100,7 @@ public class RateLimiter {
         strategies.put("token", tokenBucketStrategy);
         strategies.put("fixed", fixedWindowStrategy);
         strategies.put("sliding", slidingWindowStrategy);
+        strategies.put("leaky", leakyBucketStrategy);
     }
 
     /*
@@ -98,22 +108,22 @@ public class RateLimiter {
     */
     private void registerClientPolicies() {
         // Standard clients
-        clientAlgorithms.put("dev-key-token", "token");
-        clientAlgorithms.put("dev-key-fixed", "fixed");
-        clientAlgorithms.put("dev-key-sliding", "sliding");
+        fallbackClientAlgorithms.put("dev-key-token", "token");
+        fallbackClientAlgorithms.put("dev-key-fixed", "fixed");
+        fallbackClientAlgorithms.put("dev-key-sliding", "sliding");
 
         // limit lowered from 5 to 3 for testing purposes
         // to trigger 429 without sending too many requests for logging
-        clientLimits.put("dev-key-token", 3);
-        clientLimits.put("dev-key-fixed", 3);
-        clientLimits.put("dev-key-sliding", 3);
+        fallbackClientLimits.put("dev-key-token", 3);
+        fallbackClientLimits.put("dev-key-fixed", 3);
+        fallbackClientLimits.put("dev-key-sliding", 3);
 
         // Business client
-        clientAlgorithms.put("dev-key-business", "token");
+        fallbackClientAlgorithms.put("dev-key-business", "token");
 
         // limit also lowered from 10 to 6 for testing purposes
         // to trigger 429 without sending too many requests for logging
-        clientLimits.put("dev-key-business", 6);
+        fallbackClientLimits.put("dev-key-business", 6);
     }
 
     /*
@@ -123,24 +133,17 @@ public class RateLimiter {
         and delegates the request to that strategy
     */
     public boolean isRequestAllowed(String clientId) {
-
-        // Get algorithm for this client (default = token bucket)
-        String algo = clientAlgorithms.getOrDefault(clientId, "token");
-
-        // Get the correct strategy (fallback = token bucket)
-        RateLimiterStrategy strategy = strategies.getOrDefault(algo, tokenBucketStrategy);
-
-        // Get limit for this client (default = 5)
-        int limit = clientLimits.getOrDefault(clientId, 5);
-
-        // Delegate request
-        return strategy.isRequestAllowed(clientId, limit);
+        return isRequestAllowed(clientId, "default", "default");
     }
 
     // returns which rate limiting algorithm is assigned to the given client in the logs
     // it defaults to "token" algorithm if the client is not found in the map
     public String getAlgorithm(String clientId) {
-        return clientAlgorithms.getOrDefault(clientId, "token");
+        return resolvePolicy(clientId, "default", "default").algorithm();
+    }
+
+    public String getAlgorithm(String clientId, String tenantId, String appId) {
+        return resolvePolicy(clientId, tenantId, appId).algorithm();
     }
 
     /**
@@ -148,53 +151,86 @@ public class RateLimiter {
      * Resolves limits in order: App > Tenant > Global Default.
      */
     public boolean isRequestAllowed(String clientId, String tenantId, String appId) {
-        // Safe access to configuration
-        TenantRateLimitConfig cfg = this.tenantRateLimitConfig;
-        
-        // 1. Resolve Tenant Policy
-        TenantRateLimitConfig.TenantPolicy tenantPolicy = (cfg != null && tenantId != null) 
-            ? cfg.getTenants().get(tenantId) : null;
-
-        // 2. Bypass check: If tenant exists but is disabled, allow all traffic
-        if (tenantPolicy != null && !tenantPolicy.isEnabled()) {
+        PolicyResolution policy = resolvePolicy(clientId, tenantId, appId);
+        if (!policy.enabled()) {
             return true;
         }
 
-        // 3. Resolve App Policy
-        TenantRateLimitConfig.AppPolicy appPolicy = (tenantPolicy != null && appId != null) 
-            ? tenantPolicy.getApps().get(appId) : null;
+        RateLimiterStrategy strategy = strategies.getOrDefault(policy.algorithm(), tokenBucketStrategy);
+        String normalizedTenant = normalize(tenantId, "default");
+        String normalizedApp = normalize(appId, "default");
+        String normalizedClient = normalize(clientId, "unknown");
+        String bucketKey = normalizedTenant + "/" + normalizedApp + "/" + normalizedClient;
 
-        // 4. Resolve Limit (Highest specificity wins: App > Tenant > Client/Global)
-        int resolvedLimit;
-        if (appPolicy != null && appPolicy.isEnabled()) {
-            resolvedLimit = appPolicy.getLimit();
-        } else if (tenantPolicy != null) {
-            resolvedLimit = tenantPolicy.getLimit();
-        } else {
-            resolvedLimit = clientLimits.getOrDefault(clientId, (cfg != null) ? cfg.getDefaultLimit() : 5);
+        return strategy.isRequestAllowed(bucketKey, policy.limit());
+    }
+
+    private PolicyResolution resolvePolicy(String clientId, String tenantId, String appId) {
+        String normalizedClient = normalize(clientId, "unknown");
+        String normalizedTenant = normalize(tenantId, "default");
+        String normalizedApp = normalize(appId, "default");
+
+        RuntimeRateLimitPolicy runtimePolicy = runtimeRateLimitPolicyService.getPolicy();
+        if (runtimePolicy == null) {
+            return fallbackPolicy(normalizedClient, normalizedTenant);
         }
 
-        // 5. Resolve Algorithm
-        String algoName;
-        if (tenantPolicy != null && tenantPolicy.getAlgorithm() != null) {
-            algoName = tenantPolicy.getAlgorithm();
-        } else {
-            algoName = clientAlgorithms.getOrDefault(clientId, (cfg != null) ? cfg.getDefaultAlgorithm() : "token");
+        RuntimeRateLimitPolicy.ClientPolicy clientPolicy = runtimePolicy.getClients().get(normalizedClient);
+        RuntimeRateLimitPolicy.TenantPolicy tenantPolicy = runtimePolicy.getTenants().get(normalizedTenant);
+        RuntimeRateLimitPolicy.AppPolicy appPolicy = tenantPolicy == null ? null : tenantPolicy.getApps().get(normalizedApp);
+
+        if (tenantPolicy != null && !tenantPolicy.isEnabled()) {
+            return new PolicyResolution(1, runtimePolicy.getDefaultAlgorithm(), false);
+        }
+        if (appPolicy != null && !appPolicy.isEnabled()) {
+            appPolicy = null;
+        }
+        if (clientPolicy != null && !clientPolicy.isEnabled()) {
+            return new PolicyResolution(1, runtimePolicy.getDefaultAlgorithm(), false);
         }
 
-        // 6. Strategy selection
-        RateLimiterStrategy strategy = strategies.getOrDefault(algoName, tokenBucketStrategy);
+        int limit = runtimePolicy.getDefaultLimit();
+        String algorithm = runtimePolicy.getDefaultAlgorithm();
 
-        /*
-         * 7. Composite Key Strategy:
-         * We create a unique key representing the specific bucket.
-         * Example: "tenant-acme/dashboard"
-         * This allows existing strategies to isolate state without code changes.
-         */
-        String bucketKey = (tenantId != null && appId != null) 
-            ? tenantId + "/" + appId 
-            : clientId;
+        if (clientPolicy != null) {
+            limit = clientPolicy.getLimit();
+            algorithm = normalize(clientPolicy.getAlgorithm(), algorithm);
+        }
+        if (tenantPolicy != null) {
+            limit = tenantPolicy.getLimit();
+            algorithm = normalize(tenantPolicy.getAlgorithm(), algorithm);
+        }
+        if (appPolicy != null) {
+            limit = appPolicy.getLimit();
+            algorithm = normalize(appPolicy.getAlgorithm(), algorithm);
+        }
 
-        return strategy.isRequestAllowed(bucketKey, resolvedLimit);
+        return new PolicyResolution(Math.max(limit, 1), normalize(algorithm, "token"), true);
+    }
+
+    private PolicyResolution fallbackPolicy(String clientId, String tenantId) {
+        TenantRateLimitConfig cfg = this.tenantRateLimitConfig;
+        TenantRateLimitConfig.TenantPolicy tenantPolicy = (cfg != null && tenantId != null)
+                ? cfg.getTenants().get(tenantId) : null;
+        if (tenantPolicy != null && !tenantPolicy.isEnabled()) {
+            return new PolicyResolution(1, "token", false);
+        }
+        int limit = fallbackClientLimits.getOrDefault(clientId, (cfg != null) ? cfg.getDefaultLimit() : 5);
+        String algo = fallbackClientAlgorithms.getOrDefault(clientId, (cfg != null) ? cfg.getDefaultAlgorithm() : "token");
+        if (tenantPolicy != null) {
+            limit = tenantPolicy.getLimit();
+            algo = tenantPolicy.getAlgorithm();
+        }
+        return new PolicyResolution(Math.max(limit, 1), normalize(algo, "token"), true);
+    }
+
+    private String normalize(String value, String defaultValue) {
+        return (value == null || value.isBlank()) ? defaultValue : value.toLowerCase();
+    }
+
+    private record PolicyResolution(int limit, String algorithm, boolean enabled) { }
+
+    public int getEffectiveLimit(String clientId, String tenantId, String appId) {
+        return resolvePolicy(clientId, tenantId, appId).limit();
     }
 }

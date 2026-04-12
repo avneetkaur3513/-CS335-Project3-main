@@ -12,10 +12,27 @@ public class LogEntry {
     private final String reason;           //why the request was allowed or blocked (403,200...)
     private final String ip;               //show for easier abuse detection and blocking
     private final String algorithm;        //show the rate limiting algorithm used for the request
+    private final String tenantId;
+    private final String appId;
+    private final int statusCode;
+    private final long latencyMs;
 
 
     //we set the fields with a constructor
     public LogEntry(String apiKey, String ip, String path, String decision, String reason, String algorithm) {
+        this(apiKey, ip, path, decision, reason, algorithm, "default", "default", 0, 0L);
+    }
+
+    public LogEntry(String apiKey,
+                    String ip,
+                    String path,
+                    String decision,
+                    String reason,
+                    String algorithm,
+                    String tenantId,
+                    String appId,
+                    int statusCode,
+                    long latencyMs) {
         this.timestamp = LocalDateTime.now();
         this.apiKey    = apiKey;
         this.ip        = ip;
@@ -23,6 +40,10 @@ public class LogEntry {
         this.decision  = decision;
         this.reason    = reason;
         this.algorithm = algorithm;
+        this.tenantId  = tenantId;
+        this.appId     = appId;
+        this.statusCode = statusCode;
+        this.latencyMs = latencyMs;
     }
 
     //set get functions for Spring to convert when MetricsController (in metrics folder)
@@ -42,4 +63,8 @@ public class LogEntry {
     }
     public String getIp() { return ip; }
     public String getAlgorithm() { return algorithm; }
+    public String getTenantId() { return tenantId; }
+    public String getAppId() { return appId; }
+    public int getStatusCode() { return statusCode; }
+    public long getLatencyMs() { return latencyMs; }
 }

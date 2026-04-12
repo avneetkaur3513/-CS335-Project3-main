@@ -6,3 +6,18 @@ spring.application.name=api-gateway
 
 # API Keys (comma-separated). Defaults to dev-key-alpha,dev-key-beta if not set
 # gateway.api-keys=your-key-1,your-key-2
+
+# Redis connection
+# spring.data.redis.host=localhost
+# spring.data.redis.port=6379
+
+# Runtime policy defaults
+# rate-limit.default-limit=5
+# rate-limit.default-algorithm=token
+
+# Metrics persistence/export options
+# metrics.max-events=20000
+# metrics.export.interval-ms=3600000
+# metrics.export.directory=./data/metrics-exports
+# metrics.export.lookback-minutes=1440
+# metrics.export.recent-events-limit=500
