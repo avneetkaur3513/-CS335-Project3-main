@@ -38,16 +38,23 @@
     }
     .kpi-card { transition: all .22s ease; }
     .kpi-card:hover { transform: translateY(-3px); box-shadow: 0 14px 34px rgba(15,23,42,.08); }
+    article.surface { transition: transform .22s ease, box-shadow .22s ease; }
+    article.surface:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(15,23,42,.06); }
     .fade-up { animation: fadeUp .45s ease both; }
     @keyframes fadeUp { from { opacity: 0; transform: translateY(10px) } to { opacity: 1; transform: translateY(0) } }
     @keyframes pulseDot { 0%,100% { opacity: 1; transform: scale(1) } 50% { opacity: .45; transform: scale(1.3)} }
     .pulse-dot { animation: pulseDot 1.8s ease-in-out infinite; }
     .badge { display:inline-flex; align-items:center; border-radius:9999px; padding:2px 9px; font-size:11px; font-weight:600; }
-    .ghost-btn { border:1px solid #dbe3ef; background: rgba(255,255,255,.88); }
-    .ghost-btn:hover { background:#fff; }
+    .ghost-btn, .time-pill, .cmp-btn {
+      border:1px solid #dbe3ef;
+      transition: transform .16s ease, background-color .16s ease, box-shadow .16s ease, border-color .16s ease;
+    }
+    .ghost-btn { background: rgba(255,255,255,.88); }
+    .ghost-btn:hover, .time-pill:hover, .cmp-btn:hover { background:#fff; transform: translateY(-1px); }
+    .ghost-btn:active, .time-pill:active, .cmp-btn:active { transform: translateY(0); }
     .status-dot{ width:9px; height:9px; border-radius:9999px; display:inline-block; }
     .table-row { transition: background .12s ease, transform .12s ease; }
-    .table-row:hover { background: rgba(59,130,246,.06); }
+    .table-row:hover { background: rgba(59,130,246,.06); transform: translateX(1px); }
     .table-row.selected { background: rgba(59,130,246,.12); }
     .glass { background: rgba(255,255,255,.6); backdrop-filter: blur(10px); border:1px solid rgba(148,163,184,.3); }
     .skeleton {
@@ -56,6 +63,20 @@
     }
     @keyframes sk { 0% { background-position: 200% 0 } 100% { background-position: -200% 0 } }
     .map-cell { border-radius: 8px; border:1px solid rgba(148,163,184,.2); }
+    .panel-title { font-size: 1rem; line-height: 1.45; font-weight: 600; color: #0f172a; }
+    .panel-subtitle { font-size: .75rem; line-height: 1.35; color: #64748b; }
+    .empty-card { border: 1px dashed rgba(148,163,184,.45); background: rgba(248,250,252,.7); border-radius: 14px; padding: 16px; text-align: center; color: #64748b; font-size: 12px; }
+    .section-loading { opacity: .75; pointer-events: none; }
+
+    @media (max-width: 900px) {
+      #dashboard-main-panel { padding-top: 1rem !important; padding-bottom: 1rem !important; }
+      #dashboard-main-panel .surface { border-radius: 1rem !important; }
+      #dashboard-main-panel .h-72 { height: 15rem !important; }
+      #dashboard-main-panel .h-44 { height: 11.5rem !important; }
+      #dashboard-main-panel .h-40 { height: 10.5rem !important; }
+      #riskTableBody td, #eventTableBody td { white-space: nowrap; }
+      #eventMeta, #geoMeta, #clientPanelSub { line-height: 1.4; }
+    }
   </style>
 </head>
 <body class="text-slate-800 min-h-screen bg-slate-50">
@@ -136,8 +157,8 @@
         <div class="flex flex-wrap justify-between gap-3 mb-4">
           <div>
             <p class="text-[11px] uppercase tracking-[.16em] text-slate-400">Traffic intelligence</p>
-            <h2 class="text-base font-semibold text-slate-900">Requests vs Blocked</h2>
-            <p class="text-xs text-slate-500">Current period against historical baseline</p>
+            <h2 class="panel-title">Requests vs Blocked</h2>
+            <p class="panel-subtitle">Current period against historical baseline</p>
           </div>
           <div class="glass rounded-xl p-1 inline-flex text-xs" id="compareToggle">
             <button class="cmp-btn rounded-lg px-2.5 py-1 bg-white" data-mode="current">Current</button>
@@ -150,8 +171,8 @@
       <div class="xl:col-span-5 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-1 gap-4">
         <article class="surface rounded-3xl p-5 fade-up">
           <div class="mb-3">
-            <h3 class="font-semibold text-slate-900">HTTP status code mix</h3>
-            <p class="text-xs text-slate-500">Donut with weighted distribution</p>
+            <h3 class="panel-title">HTTP status code mix</h3>
+            <p class="panel-subtitle">Donut with weighted distribution</p>
           </div>
           <div class="flex items-center gap-4">
             <div class="w-32 h-32"><canvas id="statusChart"></canvas></div>
@@ -161,16 +182,16 @@
 
         <article class="surface rounded-3xl p-5 fade-up">
           <div class="mb-3">
-            <h3 class="font-semibold text-slate-900">Latency heatmap</h3>
-            <p class="text-xs text-slate-500">Hour-by-hour latency gradient</p>
+            <h3 class="panel-title">Latency heatmap</h3>
+            <p class="panel-subtitle">Hour-by-hour latency gradient</p>
           </div>
           <div id="latencyHeatmap" class="grid grid-cols-6 gap-1.5"></div>
         </article>
 
         <article class="surface rounded-3xl p-5 fade-up">
           <div class="mb-3">
-            <h3 class="font-semibold text-slate-900">Geographic threat map</h3>
-            <p class="text-xs text-slate-500">Regional suspicious concentration</p>
+            <h3 class="panel-title">Geographic threat map</h3>
+            <p class="panel-subtitle">Regional suspicious concentration</p>
           </div>
           <div class="rounded-2xl p-3 bg-slate-50 border border-slate-200">
             <svg viewBox="0 0 800 360" class="w-full h-32" role="img" aria-describedby="geoMeta">
@@ -189,8 +210,8 @@
 
         <article class="surface rounded-3xl p-5 fade-up">
           <div class="mb-3">
-            <h3 class="font-semibold text-slate-900">Traffic source distribution</h3>
-            <p class="text-xs text-slate-500">By decision and algorithm class</p>
+            <h3 class="panel-title">Traffic source distribution</h3>
+            <p class="panel-subtitle">By decision and algorithm class</p>
           </div>
           <div class="h-40"><canvas id="sourceChart"></canvas></div>
         </article>
@@ -202,8 +223,8 @@
         <div class="px-5 pt-5 pb-4 border-b border-slate-200/60 flex flex-wrap justify-between gap-3">
           <div>
             <p class="text-[11px] uppercase tracking-[.16em] text-slate-400">Advanced risk intelligence</p>
-            <h2 class="text-base font-semibold text-slate-900">High-risk clients</h2>
-            <p class="text-xs text-slate-500">Threat score, confidence, block rate, region signal and key health</p>
+            <h2 class="panel-title">High-risk clients</h2>
+            <p class="panel-subtitle">Threat score, confidence, block rate, region signal and key health</p>
           </div>
           <select id="riskFilter" class="ghost-btn rounded-xl px-3 py-2 text-xs">
             <option value="">All severities</option>
@@ -235,8 +256,8 @@
       <article class="xl:col-span-4 surface rounded-3xl p-5 fade-up">
         <div class="flex items-start justify-between gap-2 mb-4">
           <div>
-            <h3 class="font-semibold text-slate-900">Client intelligence panel</h3>
-            <p id="clientPanelSub" class="text-xs text-slate-500">Select a client to inspect behavior</p>
+            <h3 class="panel-title">Client intelligence panel</h3>
+            <p id="clientPanelSub" class="panel-subtitle">Select a client to inspect behavior</p>
           </div>
           <span id="clientRiskPill" class="badge bg-slate-100 text-slate-600">Not selected</span>
         </div>
@@ -279,12 +300,12 @@
     </section>
 
     <section class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-      <article class="surface rounded-3xl p-5"><h3 class="font-semibold mb-1">Latency percentile (P50 / P90 / P99)</h3><p class="text-xs text-slate-500 mb-3">Derived from observed latency baseline</p><div class="h-44"><canvas id="percentileChart"></canvas></div></article>
-      <article class="surface rounded-3xl p-5"><h3 class="font-semibold mb-1">Request category stack</h3><p class="text-xs text-slate-500 mb-3">Successful, blocked, and error traffic mix</p><div class="h-44"><canvas id="stackedChart"></canvas></div></article>
-      <article class="surface rounded-3xl p-5"><h3 class="font-semibold mb-1">API key usage trend</h3><p class="text-xs text-slate-500 mb-3">Top tenant key volume trend</p><div class="h-44"><canvas id="apiUsageChart"></canvas></div></article>
-      <article class="surface rounded-3xl p-5"><h3 class="font-semibold mb-1">Top blocked endpoints</h3><p class="text-xs text-slate-500 mb-3">Highest blocked path concentration</p><div class="h-44"><canvas id="blockedEndpointsChart"></canvas></div></article>
-      <article class="surface rounded-3xl p-5"><h3 class="font-semibold mb-1">Decision breakdown</h3><p class="text-xs text-slate-500 mb-3">Allow vs block ratios and warning states</p><div class="h-44"><canvas id="decisionChart"></canvas></div></article>
-      <article class="surface rounded-3xl p-5"><h3 class="font-semibold mb-1">Risk scoring radar</h3><p class="text-xs text-slate-500 mb-3">Composite threat category posture</p><div class="h-44"><canvas id="riskRadarChart"></canvas></div></article>
+      <article class="surface rounded-3xl p-5"><h3 class="panel-title mb-1">Latency percentile (P50 / P90 / P99)</h3><p class="panel-subtitle mb-3">Derived from observed latency baseline</p><div class="h-44"><canvas id="percentileChart"></canvas></div></article>
+      <article class="surface rounded-3xl p-5"><h3 class="panel-title mb-1">Request category stack</h3><p class="panel-subtitle mb-3">Successful, blocked, and error traffic mix</p><div class="h-44"><canvas id="stackedChart"></canvas></div></article>
+      <article class="surface rounded-3xl p-5"><h3 class="panel-title mb-1">API key usage trend</h3><p class="panel-subtitle mb-3">Top tenant key volume trend</p><div class="h-44"><canvas id="apiUsageChart"></canvas></div></article>
+      <article class="surface rounded-3xl p-5"><h3 class="panel-title mb-1">Top blocked endpoints</h3><p class="panel-subtitle mb-3">Highest blocked path concentration</p><div class="h-44"><canvas id="blockedEndpointsChart"></canvas></div></article>
+      <article class="surface rounded-3xl p-5"><h3 class="panel-title mb-1">Decision breakdown</h3><p class="panel-subtitle mb-3">Allow vs block ratios and warning states</p><div class="h-44"><canvas id="decisionChart"></canvas></div></article>
+      <article class="surface rounded-3xl p-5"><h3 class="panel-title mb-1">Risk scoring radar</h3><p class="panel-subtitle mb-3">Composite threat category posture</p><div class="h-44"><canvas id="riskRadarChart"></canvas></div></article>
     </section>
 
     <section class="surface rounded-3xl overflow-hidden fade-up">
@@ -296,7 +317,7 @@
           </div>
           <button id="exportFilteredEventsCsv" class="ghost-btn rounded-xl px-3 py-2 text-xs font-medium">Export filtered CSV</button>
         </div>
-        <div class="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-10 gap-2">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 xl:grid-cols-10 gap-2">
           <input id="fTenant" placeholder="Tenant" class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs">
           <input id="fApp" placeholder="App" class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs">
           <input id="fClient" placeholder="API key" class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs">
@@ -397,6 +418,27 @@
       if (p < 1) requestAnimationFrame(tick);
     }
     requestAnimationFrame(tick);
+  }
+
+  function skeletonRows(cols, rows = 5) {
+    return Array.from({ length: rows }).map(() =>
+      `<tr class="border-b border-slate-100">${Array.from({ length: cols }).map(() =>
+        '<td class="px-4 py-3"><div class="h-3 rounded-lg skeleton"></div></td>'
+      ).join('')}</tr>`
+    ).join('');
+  }
+
+  function setLoadingState() {
+    $('kpiGrid').innerHTML = Array.from({ length: 8 }).map(() =>
+      '<article class="surface rounded-3xl p-4"><div class="h-3 w-24 rounded-lg skeleton mb-3"></div><div class="h-7 w-20 rounded-lg skeleton mb-2"></div><div class="h-2 rounded-lg skeleton"></div></article>'
+    ).join('');
+    $('riskTableBody').innerHTML = skeletonRows(9, 5);
+    $('eventTableBody').innerHTML = skeletonRows(10, 6);
+    $('statusLegend').innerHTML = '<p class="text-xs text-slate-400">Loading status mix…</p>';
+    $('latencyHeatmap').innerHTML = Array.from({ length: 24 }).map(() => '<div class="map-cell h-7 skeleton"></div>').join('');
+    $('geoMeta').textContent = 'Threat hotspots: loading…';
+    $('eventMeta').textContent = 'Loading latest event stream…';
+    $('clientAnomalies').innerHTML = '<div class="empty-card">Select a client once data loads.</div>';
   }
 
   function sparkline(id, data, color) {
@@ -926,6 +968,7 @@
   }
 
   async function loadDashboard() {
+    setLoadingState();
     const mins = getMinutes();
     const d = await get('/metrics/dashboard?minutes=' + mins);
     const evData = await get('/metrics/dashboard/events?' + buildEventQuery());
@@ -1048,7 +1091,7 @@
   $('cmdSearch').onclick = () => alert('Command palette placeholder. Search clients, anomalies, API keys, tokens.');
 
   (async () => {
-    $('kpiGrid').innerHTML = '<div class="surface rounded-3xl p-5 col-span-full"><div class="h-10 rounded-xl skeleton"></div></div>';
+    setLoadingState();
     syncNotificationA11y();
     await loadDashboard();
     await loadConfig();
