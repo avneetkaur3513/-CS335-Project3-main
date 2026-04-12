@@ -63,7 +63,7 @@
   <header class="sticky top-0 z-50 border-b border-slate-200/80 bg-white/90 backdrop-blur-xl">
     <div class="max-w-[1700px] mx-auto px-4 lg:px-8 h-16 flex items-center gap-3">
       <div class="flex items-center gap-3 min-w-[220px]">
-        <div class="w-9 h-9 rounded-2xl bg-gradient-to-br from-blue-600 to-violet-600 flex items-center justify-center text-white font-bold" role="img" aria-label="Gateway Intelligence Logo">GI</div>
+        <div class="w-9 h-9 rounded-2xl bg-gradient-to-br from-blue-600 to-violet-600 flex items-center justify-center text-white font-bold">GI</div>
         <div>
           <p class="text-[11px] uppercase tracking-[.18em] text-slate-400">Security Console</p>
           <p class="text-sm font-semibold text-slate-900">Gateway Intelligence</p>
@@ -99,7 +99,7 @@
     </div>
   </header>
 
-  <main id="dashboard-main-panel" class="max-w-[1700px] mx-auto px-4 lg:px-8 py-6 lg:py-8 space-y-6">
+  <main id="dashboard-main-panel" role="tabpanel" class="max-w-[1700px] mx-auto px-4 lg:px-8 py-6 lg:py-8 space-y-6">
 
     <section class="surface rounded-3xl p-5 lg:p-7 fade-up">
       <div class="flex flex-wrap items-start justify-between gap-4">
@@ -173,8 +173,8 @@
             <p class="text-xs text-slate-500">Regional suspicious concentration</p>
           </div>
           <div class="rounded-2xl p-3 bg-slate-50 border border-slate-200">
-            <svg viewBox="0 0 800 360" class="w-full h-32" role="img" aria-labelledby="geoThreatMapTitle">
-              <title id="geoThreatMapTitle">Geographic distribution of security threats</title>
+            <svg viewBox="0 0 800 360" class="w-full h-32" role="img">
+              <title>Geographic distribution of security threats</title>
               <rect x="0" y="0" width="800" height="360" fill="transparent"></rect>
               <ellipse cx="150" cy="170" rx="100" ry="70" fill="rgba(59,130,246,.15)"></ellipse>
               <ellipse cx="360" cy="150" rx="130" ry="80" fill="rgba(236,72,153,.18)"></ellipse>
@@ -359,6 +359,11 @@
   let dashboard = null;
   let selectedClient = null;
   let compareMode = 'current';
+  const CONFIDENCE_BASELINE = 45;
+  const CONFIDENCE_MAX = 99;
+  const CONFIDENCE_RISK_WEIGHT = 0.72;
+  const CONFIDENCE_VOLUME_CAP = 28;
+  const CONFIDENCE_VOLUME_SCALE = 12;
 
   const KPI_CONFIG = [
     { id:'total', title:'Total Requests', color:'#3b82f6', icon:'↗', value:0, context:'Total API calls in selected window' },
@@ -469,6 +474,7 @@
 
   function regionFromIp(ip) {
     if (!ip) return 'global';
+    // Deterministic fallback mapping for synthetic regional grouping in environments without geo-IP enrichment.
     const n = Number((ip.match(/\d+/) || ['0'])[0]) % 5;
     return ['NA', 'EU', 'APAC', 'LATAM', 'MEA'][n];
   }
@@ -543,7 +549,7 @@
         <article class="kpi-card surface rounded-3xl p-4 fade-up" style="animation-delay:${i * .03}s">
           <div class="flex justify-between items-start mb-2">
             <p class="text-[11px] uppercase tracking-[.16em] text-slate-500">${k.title}</p>
-            <span class="w-7 h-7 rounded-xl flex items-center justify-center" style="background:${k.color}18;color:${k.color}">${k.icon}</span>
+            <span aria-hidden="true" class="w-7 h-7 rounded-xl flex items-center justify-center" style="background:${k.color}18;color:${k.color}">${k.icon}</span>
           </div>
           <div class="flex items-end justify-between gap-2">
             <p id="kpi-${k.id}" class="text-2xl font-bold tabular-nums">0</p>
@@ -621,7 +627,13 @@
     rows = rows.map(r => {
       const sev = r.riskScore >= 70 ? 'high' : r.riskScore >= 40 ? 'medium' : 'low';
       const totalReq = Number(r.totalRequests || r.count || 0);
-      const conf = Math.min(99, Math.max(45, Math.round((Number(r.riskScore || 0) * 0.72) + Math.min(28, Math.log10(totalReq + 1) * 12))));
+      const conf = Math.min(
+        CONFIDENCE_MAX,
+        Math.max(
+          CONFIDENCE_BASELINE,
+          Math.round((Number(r.riskScore || 0) * CONFIDENCE_RISK_WEIGHT) + Math.min(CONFIDENCE_VOLUME_CAP, Math.log10(totalReq + 1) * CONFIDENCE_VOLUME_SCALE))
+        )
+      );
       const region = regionFromIp((events.find(e => e.apiKey === r.clientId) || {}).ip);
       const keyHealth = (r.blockedRate || 0) > 45 ? 'degraded' : (r.blockedRate || 0) > 20 ? 'warning' : 'healthy';
       return Object.assign({}, r, { sev, conf, region, keyHealth });
@@ -777,11 +789,14 @@
     const err = ts.status5xx || [];
     const ok = req.map((v, i) => Math.max(0, v - (blk[i] || 0) - (err[i] || 0)));
 
+    const previousReq = req.length > 1 ? [req[0], ...req.slice(0, -1)] : req;
+    const previousBlk = blk.length > 1 ? [blk[0], ...blk.slice(0, -1)] : blk;
+
     upsertChart('trafficChart', 'line', {
       labels,
       datasets: [
-        { label:'Requests', data: compareMode === 'current' ? req : req.map(v => Math.max(0, v * .78)), borderColor:'#3b82f6', backgroundColor:'rgba(59,130,246,.15)', fill:true, borderWidth:2 },
-        { label:'Blocked', data: compareMode === 'current' ? blk : blk.map(v => Math.max(0, v * .82)), borderColor:'#f43f5e', backgroundColor:'rgba(244,63,94,.12)', fill:true, borderWidth:2 }
+        { label:'Requests', data: compareMode === 'current' ? req : previousReq, borderColor:'#3b82f6', backgroundColor:'rgba(59,130,246,.15)', fill:true, borderWidth:2 },
+        { label:'Blocked', data: compareMode === 'current' ? blk : previousBlk, borderColor:'#f43f5e', backgroundColor:'rgba(244,63,94,.12)', fill:true, borderWidth:2 }
       ]
     }, { plugins:{ legend:{display:true} } });
 
@@ -935,7 +950,7 @@
       b.classList.toggle('shadow-sm', active);
       b.classList.toggle('text-slate-900', active);
       b.setAttribute('aria-selected', active ? 'true' : 'false');
-      b.tabIndex = active ? 0 : -1;
+      b.tabIndex = 0;
     });
   }
 
