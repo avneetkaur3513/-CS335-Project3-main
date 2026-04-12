@@ -2,6 +2,8 @@ package com.CS335_Project3.api_gateway.metrics;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PreDestroy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -14,6 +16,7 @@ import java.util.Map;
 
 @Service
 public class MetricsExportService {
+    private static final Logger log = LoggerFactory.getLogger(MetricsExportService.class);
 
     private final MetricsService metricsService;
     private final ObjectMapper objectMapper;
@@ -55,7 +58,8 @@ public class MetricsExportService {
 
             String filename = "metrics-" + Instant.now().toEpochMilli() + ".json";
             Files.writeString(dir.resolve(filename), objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(payload));
-        } catch (IOException ignored) {
+        } catch (IOException e) {
+            log.warn("Failed to export metrics snapshot to {}", exportDirectory, e);
         }
     }
 }
