@@ -11,7 +11,6 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
-      darkMode: 'class',
       theme: {
         extend: {
           fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
@@ -31,21 +30,14 @@
         radial-gradient(1000px 360px at 100% -20%, rgba(139,92,246,.08), transparent 60%),
         #f8fafc;
     }
-    .dark body { background: #020617; }
     .surface {
       background: linear-gradient(180deg, rgba(255,255,255,.98), rgba(255,255,255,.94));
       border: 1px solid rgba(148,163,184,.25);
       box-shadow: 0 4px 20px rgba(15,23,42,.04);
       backdrop-filter: blur(8px);
     }
-    .dark .surface {
-      background: linear-gradient(180deg, rgba(15,23,42,.88), rgba(15,23,42,.74));
-      border-color: rgba(148,163,184,.2);
-      box-shadow: 0 6px 28px rgba(2,6,23,.45);
-    }
     .kpi-card { transition: all .22s ease; }
     .kpi-card:hover { transform: translateY(-3px); box-shadow: 0 14px 34px rgba(15,23,42,.08); }
-    .dark .kpi-card:hover { box-shadow: 0 16px 30px rgba(2,6,23,.5); }
     .fade-up { animation: fadeUp .45s ease both; }
     @keyframes fadeUp { from { opacity: 0; transform: translateY(10px) } to { opacity: 1; transform: translateY(0) } }
     @keyframes pulseDot { 0%,100% { opacity: 1; transform: scale(1) } 50% { opacity: .45; transform: scale(1.3)} }
@@ -53,43 +45,36 @@
     .badge { display:inline-flex; align-items:center; border-radius:9999px; padding:2px 9px; font-size:11px; font-weight:600; }
     .ghost-btn { border:1px solid #dbe3ef; background: rgba(255,255,255,.88); }
     .ghost-btn:hover { background:#fff; }
-    .dark .ghost-btn { border-color: rgba(148,163,184,.25); background: rgba(15,23,42,.55); }
-    .dark .ghost-btn:hover { background: rgba(30,41,59,.78); }
     .status-dot{ width:9px; height:9px; border-radius:9999px; display:inline-block; }
     .table-row { transition: background .12s ease, transform .12s ease; }
     .table-row:hover { background: rgba(59,130,246,.06); }
     .table-row.selected { background: rgba(59,130,246,.12); }
     .glass { background: rgba(255,255,255,.6); backdrop-filter: blur(10px); border:1px solid rgba(148,163,184,.3); }
-    .dark .glass { background: rgba(15,23,42,.55); }
     .skeleton {
       background: linear-gradient(90deg, rgba(226,232,240,.45), rgba(226,232,240,.78), rgba(226,232,240,.45));
       background-size: 200% 100%; animation: sk 1.2s linear infinite;
-    }
-    .dark .skeleton {
-      background: linear-gradient(90deg, rgba(51,65,85,.42), rgba(51,65,85,.72), rgba(51,65,85,.42));
-      background-size: 200% 100%;
     }
     @keyframes sk { 0% { background-position: 200% 0 } 100% { background-position: -200% 0 } }
     .map-cell { border-radius: 8px; border:1px solid rgba(148,163,184,.2); }
   </style>
 </head>
-<body class="text-slate-800 dark:text-slate-100 min-h-screen bg-slate-50 dark:bg-slate-950">
+<body class="text-slate-800 min-h-screen bg-slate-50">
 
-  <header class="sticky top-0 z-50 border-b border-slate-200/80 dark:border-slate-700/70 bg-white/90 dark:bg-slate-900/80 backdrop-blur-xl">
+  <header class="sticky top-0 z-50 border-b border-slate-200/80 bg-white/90 backdrop-blur-xl">
     <div class="max-w-[1700px] mx-auto px-4 lg:px-8 h-16 flex items-center gap-3">
       <div class="flex items-center gap-3 min-w-[220px]">
         <div class="w-9 h-9 rounded-2xl bg-gradient-to-br from-blue-600 to-violet-600 flex items-center justify-center text-white font-bold">GI</div>
         <div>
           <p class="text-[11px] uppercase tracking-[.18em] text-slate-400">Security Console</p>
-          <p class="text-sm font-semibold text-slate-900 dark:text-slate-100">Gateway Intelligence</p>
+          <p class="text-sm font-semibold text-slate-900">Gateway Intelligence</p>
         </div>
       </div>
 
       <div class="hidden md:flex flex-1 justify-center">
-        <button id="cmdSearch" class="w-full max-w-xl h-10 rounded-2xl px-4 flex items-center gap-3 text-sm border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-left">
+        <button id="cmdSearch" class="w-full max-w-xl h-10 rounded-2xl px-4 flex items-center gap-3 text-sm border border-slate-200 bg-slate-50 text-slate-500 text-left">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35m1.85-5.65a7.5 7.5 0 11-15 0 7.5 7.5 0 0115 0z"/></svg>
           <span class="truncate">Search clients, anomalies, API keys, tokens…</span>
-          <span class="ml-auto text-xs px-2 py-0.5 rounded-md border border-slate-200 dark:border-slate-600">⌘K</span>
+          <span class="ml-auto text-xs px-2 py-0.5 rounded-md border border-slate-200">⌘K</span>
         </button>
       </div>
 
@@ -103,12 +88,8 @@
           <option>Staging</option>
           <option>Dev</option>
         </select>
-        <button id="themeToggle" class="ghost-btn rounded-xl px-2.5 py-2" title="Toggle theme">
-          <svg id="sunIcon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.36 6.36-.7-.7M6.34 6.34l-.7-.7m12.72 0-.7.7M6.34 17.66l-.7.7M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-          <svg id="moonIcon" class="w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.35 15.35A9 9 0 018.65 3.65 9 9 0 1012 21a9 9 0 008.35-5.65z"/></svg>
-        </button>
         <button id="exportReportBtn" class="ghost-btn rounded-xl px-3 py-2 text-xs font-medium">Export</button>
-        <div class="hidden sm:flex items-center gap-2 rounded-xl px-3 py-2 border border-emerald-200 dark:border-emerald-800/60 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 text-xs font-medium">
+        <div class="hidden sm:flex items-center gap-2 rounded-xl px-3 py-2 border border-emerald-200 bg-emerald-50 text-emerald-700 text-xs font-medium">
           <span class="w-2 h-2 rounded-full bg-emerald-500 pulse-dot"></span>Live connection
         </div>
         <button class="ghost-btn rounded-xl p-1.5">
@@ -124,18 +105,18 @@
       <div class="flex flex-wrap items-start justify-between gap-4">
         <div>
           <p class="text-[11px] uppercase tracking-[.2em] text-slate-500">Executive overview</p>
-          <h1 class="text-3xl lg:text-4xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Gateway Intelligence</h1>
-          <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Real-time observability, anomaly detection, and traffic intelligence</p>
+          <h1 class="text-3xl lg:text-4xl font-bold tracking-tight text-slate-900">Gateway Intelligence</h1>
+          <p class="mt-1 text-sm text-slate-500">Real-time observability, anomaly detection, and traffic intelligence</p>
           <div class="mt-3 flex flex-wrap items-center gap-3 text-xs">
             <span id="lastUpdated" class="text-slate-500">Updated just now</span>
-            <span class="inline-flex items-center gap-1.5 text-emerald-600 dark:text-emerald-300"><span class="w-2 h-2 rounded-full bg-emerald-500 pulse-dot"></span>Live status</span>
-            <span id="incidentCount" class="badge bg-rose-50 text-rose-600 dark:bg-rose-900/30 dark:text-rose-300">0 active incidents</span>
+            <span class="inline-flex items-center gap-1.5 text-emerald-600"><span class="w-2 h-2 rounded-full bg-emerald-500 pulse-dot"></span>Live status</span>
+            <span id="incidentCount" class="badge bg-rose-50 text-rose-600">0 active incidents</span>
           </div>
         </div>
 
         <div class="flex flex-wrap gap-2 items-center">
           <div class="glass rounded-2xl p-1 inline-flex" role="tablist" aria-label="time range">
-            <button class="time-pill px-3 py-1.5 text-xs font-medium rounded-xl bg-white dark:bg-slate-800 shadow-sm" data-minutes="15">15m</button>
+            <button class="time-pill px-3 py-1.5 text-xs font-medium rounded-xl bg-white shadow-sm" data-minutes="15">15m</button>
             <button class="time-pill px-3 py-1.5 text-xs font-medium rounded-xl" data-minutes="60">1h</button>
             <button class="time-pill px-3 py-1.5 text-xs font-medium rounded-xl" data-minutes="1440">24h</button>
             <button class="time-pill px-3 py-1.5 text-xs font-medium rounded-xl" data-minutes="10080">7d</button>
@@ -155,11 +136,11 @@
         <div class="flex flex-wrap justify-between gap-3 mb-4">
           <div>
             <p class="text-[11px] uppercase tracking-[.16em] text-slate-400">Traffic intelligence</p>
-            <h2 class="text-base font-semibold text-slate-900 dark:text-slate-100">Requests vs Blocked</h2>
+            <h2 class="text-base font-semibold text-slate-900">Requests vs Blocked</h2>
             <p class="text-xs text-slate-500">Current period against historical baseline</p>
           </div>
           <div class="glass rounded-xl p-1 inline-flex text-xs" id="compareToggle">
-            <button class="cmp-btn rounded-lg px-2.5 py-1 bg-white dark:bg-slate-800" data-mode="current">Current</button>
+            <button class="cmp-btn rounded-lg px-2.5 py-1 bg-white" data-mode="current">Current</button>
             <button class="cmp-btn rounded-lg px-2.5 py-1" data-mode="previous">Previous</button>
           </div>
         </div>
@@ -169,7 +150,7 @@
       <div class="xl:col-span-5 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-1 gap-4">
         <article class="surface rounded-3xl p-5 fade-up">
           <div class="mb-3">
-            <h3 class="font-semibold text-slate-900 dark:text-slate-100">HTTP status code mix</h3>
+            <h3 class="font-semibold text-slate-900">HTTP status code mix</h3>
             <p class="text-xs text-slate-500">Donut with weighted distribution</p>
           </div>
           <div class="flex items-center gap-4">
@@ -180,7 +161,7 @@
 
         <article class="surface rounded-3xl p-5 fade-up">
           <div class="mb-3">
-            <h3 class="font-semibold text-slate-900 dark:text-slate-100">Latency heatmap</h3>
+            <h3 class="font-semibold text-slate-900">Latency heatmap</h3>
             <p class="text-xs text-slate-500">Hour-by-hour latency gradient</p>
           </div>
           <div id="latencyHeatmap" class="grid grid-cols-6 gap-1.5"></div>
@@ -188,10 +169,10 @@
 
         <article class="surface rounded-3xl p-5 fade-up">
           <div class="mb-3">
-            <h3 class="font-semibold text-slate-900 dark:text-slate-100">Geographic threat map</h3>
+            <h3 class="font-semibold text-slate-900">Geographic threat map</h3>
             <p class="text-xs text-slate-500">Regional suspicious concentration</p>
           </div>
-          <div class="rounded-2xl p-3 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700">
+          <div class="rounded-2xl p-3 bg-slate-50 border border-slate-200">
             <svg viewBox="0 0 800 360" class="w-full h-32">
               <rect x="0" y="0" width="800" height="360" fill="transparent"></rect>
               <ellipse cx="150" cy="170" rx="100" ry="70" fill="rgba(59,130,246,.15)"></ellipse>
@@ -207,7 +188,7 @@
 
         <article class="surface rounded-3xl p-5 fade-up">
           <div class="mb-3">
-            <h3 class="font-semibold text-slate-900 dark:text-slate-100">Traffic source distribution</h3>
+            <h3 class="font-semibold text-slate-900">Traffic source distribution</h3>
             <p class="text-xs text-slate-500">By decision and algorithm class</p>
           </div>
           <div class="h-40"><canvas id="sourceChart"></canvas></div>
@@ -217,10 +198,10 @@
 
     <section class="grid grid-cols-1 xl:grid-cols-12 gap-4">
       <article class="xl:col-span-8 surface rounded-3xl overflow-hidden fade-up">
-        <div class="px-5 pt-5 pb-4 border-b border-slate-200/60 dark:border-slate-700/70 flex flex-wrap justify-between gap-3">
+        <div class="px-5 pt-5 pb-4 border-b border-slate-200/60 flex flex-wrap justify-between gap-3">
           <div>
             <p class="text-[11px] uppercase tracking-[.16em] text-slate-400">Advanced risk intelligence</p>
-            <h2 class="text-base font-semibold text-slate-900 dark:text-slate-100">High-risk clients</h2>
+            <h2 class="text-base font-semibold text-slate-900">High-risk clients</h2>
             <p class="text-xs text-slate-500">Threat score, confidence, block rate, region signal and key health</p>
           </div>
           <select id="riskFilter" class="ghost-btn rounded-xl px-3 py-2 text-xs">
@@ -232,8 +213,8 @@
         </div>
         <div class="overflow-auto max-h-[420px]">
           <table class="w-full text-xs">
-            <thead class="sticky top-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur z-10 border-b border-slate-200 dark:border-slate-700">
-              <tr class="text-slate-500 dark:text-slate-400">
+            <thead class="sticky top-0 bg-white/95 backdrop-blur z-10 border-b border-slate-200">
+              <tr class="text-slate-500">
                 <th class="px-4 py-3 text-left">Client</th>
                 <th class="px-4 py-3 text-left">Severity</th>
                 <th class="px-4 py-3 text-left">Threat score</th>
@@ -253,14 +234,14 @@
       <article class="xl:col-span-4 surface rounded-3xl p-5 fade-up">
         <div class="flex items-start justify-between gap-2 mb-4">
           <div>
-            <h3 class="font-semibold text-slate-900 dark:text-slate-100">Client intelligence panel</h3>
+            <h3 class="font-semibold text-slate-900">Client intelligence panel</h3>
             <p id="clientPanelSub" class="text-xs text-slate-500">Select a client to inspect behavior</p>
           </div>
-          <span id="clientRiskPill" class="badge bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">Not selected</span>
+          <span id="clientRiskPill" class="badge bg-slate-100 text-slate-600">Not selected</span>
         </div>
 
-        <div id="clientEmptyState" class="rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 p-6 text-center">
-          <p class="text-sm font-medium text-slate-600 dark:text-slate-300">No client selected</p>
+        <div id="clientEmptyState" class="rounded-2xl border border-dashed border-slate-300 p-6 text-center">
+          <p class="text-sm font-medium text-slate-600">No client selected</p>
           <p class="mt-1 text-xs text-slate-500">Choose a row from High-risk clients to view traffic trend, anomalies, and API key posture.</p>
         </div>
 
@@ -274,10 +255,10 @@
           </div>
 
           <div class="grid grid-cols-2 gap-2">
-            <div class="rounded-2xl p-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700"><p class="text-[11px] text-slate-500 uppercase">Requests</p><p id="cdTotal" class="font-bold tabular-nums">—</p></div>
-            <div class="rounded-2xl p-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700"><p class="text-[11px] text-slate-500 uppercase">Block rate</p><p id="cdBlockRate" class="font-bold tabular-nums text-rose-500">—</p></div>
-            <div class="rounded-2xl p-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700"><p class="text-[11px] text-slate-500 uppercase">Risk score</p><p id="cdRisk" class="font-bold tabular-nums text-orange-500">—</p></div>
-            <div class="rounded-2xl p-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700"><p class="text-[11px] text-slate-500 uppercase">Avg latency</p><p id="cdLatency" class="font-bold tabular-nums text-violet-500">—</p></div>
+            <div class="rounded-2xl p-3 bg-slate-50 border border-slate-200"><p class="text-[11px] text-slate-500 uppercase">Requests</p><p id="cdTotal" class="font-bold tabular-nums">—</p></div>
+            <div class="rounded-2xl p-3 bg-slate-50 border border-slate-200"><p class="text-[11px] text-slate-500 uppercase">Block rate</p><p id="cdBlockRate" class="font-bold tabular-nums text-rose-500">—</p></div>
+            <div class="rounded-2xl p-3 bg-slate-50 border border-slate-200"><p class="text-[11px] text-slate-500 uppercase">Risk score</p><p id="cdRisk" class="font-bold tabular-nums text-orange-500">—</p></div>
+            <div class="rounded-2xl p-3 bg-slate-50 border border-slate-200"><p class="text-[11px] text-slate-500 uppercase">Avg latency</p><p id="cdLatency" class="font-bold tabular-nums text-violet-500">—</p></div>
           </div>
 
           <div>
@@ -306,7 +287,7 @@
     </section>
 
     <section class="surface rounded-3xl overflow-hidden fade-up">
-      <div class="p-5 border-b border-slate-200/60 dark:border-slate-700/70">
+      <div class="p-5 border-b border-slate-200/60">
         <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
           <div>
             <h2 class="text-base font-semibold">Live incident feed</h2>
@@ -315,15 +296,15 @@
           <button id="exportFilteredEventsCsv" class="ghost-btn rounded-xl px-3 py-2 text-xs font-medium">Export filtered CSV</button>
         </div>
         <div class="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-10 gap-2">
-          <input id="fTenant" placeholder="Tenant" class="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2 text-xs">
-          <input id="fApp" placeholder="App" class="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2 text-xs">
-          <input id="fClient" placeholder="API key" class="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2 text-xs">
-          <input id="fIp" placeholder="IP" class="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2 text-xs">
-          <input id="fStatus" placeholder="HTTP status" class="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2 text-xs">
-          <input id="fAlgorithm" placeholder="Decision type" class="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2 text-xs">
-          <input id="fEndpoint" placeholder="Endpoint" class="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2 text-xs">
-          <input id="fRegion" placeholder="Region" class="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2 text-xs">
-          <input id="fSeverity" placeholder="Severity" class="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2 text-xs">
+          <input id="fTenant" placeholder="Tenant" class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs">
+          <input id="fApp" placeholder="App" class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs">
+          <input id="fClient" placeholder="API key" class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs">
+          <input id="fIp" placeholder="IP" class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs">
+          <input id="fStatus" placeholder="HTTP status" class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs">
+          <input id="fAlgorithm" placeholder="Decision type" class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs">
+          <input id="fEndpoint" placeholder="Endpoint" class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs">
+          <input id="fRegion" placeholder="Region" class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs">
+          <input id="fSeverity" placeholder="Severity" class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs">
           <div class="flex gap-2">
             <button id="applyEventFilters" class="rounded-xl bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 text-xs font-medium flex-1">Apply</button>
             <button id="clearEventFilters" class="ghost-btn rounded-xl px-3 py-2 text-xs font-medium flex-1">Clear</button>
@@ -332,8 +313,8 @@
       </div>
       <div class="overflow-auto max-h-[360px]">
         <table class="w-full text-xs">
-          <thead class="sticky top-0 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 z-10">
-            <tr class="text-left text-slate-500 dark:text-slate-400">
+          <thead class="sticky top-0 bg-white border-b border-slate-200 z-10">
+            <tr class="text-left text-slate-500">
               <th class="px-4 py-3">Time</th>
               <th class="px-4 py-3">Type</th>
               <th class="px-4 py-3">Severity</th>
@@ -362,7 +343,7 @@
           <button id="applyConfig" class="rounded-xl bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 text-xs font-medium">Apply config</button>
         </div>
       </div>
-      <textarea id="configJson" rows="8" class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-3 text-xs font-mono"></textarea>
+      <textarea id="configJson" rows="8" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-3 py-3 text-xs font-mono"></textarea>
     </section>
 
     <footer class="text-center text-xs text-slate-500 pb-2">Gateway Intelligence · Auto-refresh every <span id="refreshLabel">10s</span></footer>
@@ -388,26 +369,6 @@
     { id:'suspicious', title:'Suspicious Sessions', color:'#ec4899', icon:'⚠', value:0, context:'High-risk or blocked bursts' },
     { id:'peak', title:'Peak Traffic', color:'#f97316', icon:'◎', value:0, context:'Max requests per minute' }
   ];
-
-  function setTheme(dark) {
-    const html = document.documentElement;
-    if (dark) {
-      html.classList.add('dark');
-      $('sunIcon').classList.add('hidden');
-      $('moonIcon').classList.remove('hidden');
-    } else {
-      html.classList.remove('dark');
-      $('sunIcon').classList.remove('hidden');
-      $('moonIcon').classList.add('hidden');
-    }
-  }
-
-  setTheme(localStorage.getItem('gwTheme') === 'dark');
-  $('themeToggle').onclick = () => {
-    const dark = !document.documentElement.classList.contains('dark');
-    setTheme(dark);
-    localStorage.setItem('gwTheme', dark ? 'dark' : 'light');
-  };
 
   function fmtNum(value, suffix='') {
     if (suffix === '%') return Number(value).toFixed(1) + suffix;
@@ -486,16 +447,16 @@
   }
 
   function severityBadge(s) {
-    if (s === 'high') return '<span class="badge bg-rose-50 text-rose-600 dark:bg-rose-900/30 dark:text-rose-300">High</span>';
-    if (s === 'medium') return '<span class="badge bg-amber-50 text-amber-600 dark:bg-amber-900/30 dark:text-amber-300">Medium</span>';
-    return '<span class="badge bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-300">Low</span>';
+    if (s === 'high') return '<span class="badge bg-rose-50 text-rose-600">High</span>';
+    if (s === 'medium') return '<span class="badge bg-amber-50 text-amber-600">Medium</span>';
+    return '<span class="badge bg-emerald-50 text-emerald-600">Low</span>';
   }
 
   function decisionBadge(d) {
     const v = (d || '').toLowerCase();
-    if (v.includes('block')) return '<span class="badge bg-rose-50 text-rose-600 dark:bg-rose-900/30 dark:text-rose-300">Blocked</span>';
-    if (v.includes('allow')) return '<span class="badge bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-300">Allowed</span>';
-    return '<span class="badge bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-300">'+ (d || 'Other') +'</span>';
+    if (v.includes('block')) return '<span class="badge bg-rose-50 text-rose-600">Blocked</span>';
+    if (v.includes('allow')) return '<span class="badge bg-emerald-50 text-emerald-600">Allowed</span>';
+    return '<span class="badge bg-blue-50 text-blue-600">'+ (d || 'Other') +'</span>';
   }
 
   function statusBadge(code) {
@@ -538,7 +499,7 @@
           </div>
           <div class="flex items-end justify-between gap-2">
             <p id="kpi-${k.id}" class="text-2xl font-bold tabular-nums">0</p>
-            <span id="kpi-delta-${k.id}" class="text-[11px] px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500">+0.0%</span>
+            <span id="kpi-delta-${k.id}" class="text-[11px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">+0.0%</span>
           </div>
           <p class="mt-1 text-[11px] text-slate-500">${k.context}</p>
           <div class="h-8 mt-2"><canvas id="spark-${k.id}"></canvas></div>
@@ -557,8 +518,8 @@
       const dEl = $('kpi-delta-' + k.id);
       dEl.textContent = `${trend > 0 ? '+' : ''}${trend}%`;
       dEl.className = 'text-[11px] px-2 py-0.5 rounded-full ' + (trend > 0
-        ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-300'
-        : 'bg-rose-50 text-rose-600 dark:bg-rose-900/30 dark:text-rose-300');
+        ? 'bg-emerald-50 text-emerald-600'
+        : 'bg-rose-50 text-rose-600');
 
       const arr = (d.timeseries?.requests || []).slice(-8);
       const factor = k.id === 'blocked' ? (d.timeseries?.blocked || []).slice(-8)
@@ -585,7 +546,7 @@
       const val = arr[i] || 0;
       const intensity = Math.min(.95, base ? (val / base) : 0);
       const bg = `rgba(139,92,246,${0.08 + intensity * .8})`;
-      return `<div class="map-cell h-7 flex items-center justify-center text-[10px] text-slate-600 dark:text-slate-200" style="background:${bg}">${Math.round(val)}</div>`;
+      return `<div class="map-cell h-7 flex items-center justify-center text-[10px] text-slate-600" style="background:${bg}">${Math.round(val)}</div>`;
     }).join('');
   }
 
@@ -611,12 +572,12 @@
     tb.innerHTML = rows.map(r => {
       const sevBadge = severityBadge(r.sev);
       const keyBadge = r.keyHealth === 'healthy'
-        ? '<span class="badge bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-300">Healthy</span>'
+        ? '<span class="badge bg-emerald-50 text-emerald-600">Healthy</span>'
         : r.keyHealth === 'warning'
-          ? '<span class="badge bg-amber-50 text-amber-600 dark:bg-amber-900/30 dark:text-amber-300">Warning</span>'
-          : '<span class="badge bg-rose-50 text-rose-600 dark:bg-rose-900/30 dark:text-rose-300">Degraded</span>';
+          ? '<span class="badge bg-amber-50 text-amber-600">Warning</span>'
+          : '<span class="badge bg-rose-50 text-rose-600">Degraded</span>';
 
-      return `<tr class="table-row border-b border-slate-100 dark:border-slate-800 ${selectedClient === r.clientId ? 'selected' : ''}" data-client="${r.clientId}">
+      return `<tr class="table-row border-b border-slate-100 ${selectedClient === r.clientId ? 'selected' : ''}" data-client="${r.clientId}">
         <td class="px-4 py-3 font-mono">${r.clientId}</td>
         <td class="px-4 py-3">${sevBadge}</td>
         <td class="px-4 py-3 tabular-nums font-semibold text-orange-500">${Number(r.riskScore).toFixed(1)}</td>
@@ -647,7 +608,7 @@
     $('clientAvatar').textContent = row.clientId[0]?.toUpperCase() || '?';
     $('clientName').textContent = row.clientId;
     $('clientPanelSub').textContent = `Monitoring ${row.clientId}`;
-    $('clientRiskPill').outerHTML = `<span id="clientRiskPill" class="badge ${row.riskScore >= 70 ? 'bg-rose-50 text-rose-600 dark:bg-rose-900/30 dark:text-rose-300' : row.riskScore >= 40 ? 'bg-amber-50 text-amber-600 dark:bg-amber-900/30 dark:text-amber-300' : 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-300'}">Risk ${Number(row.riskScore).toFixed(1)}</span>`;
+    $('clientRiskPill').outerHTML = `<span id="clientRiskPill" class="badge ${row.riskScore >= 70 ? 'bg-rose-50 text-rose-600' : row.riskScore >= 40 ? 'bg-amber-50 text-amber-600' : 'bg-emerald-50 text-emerald-600'}">Risk ${Number(row.riskScore).toFixed(1)}</span>`;
 
     const mins = getMinutes();
     const det = await get('/metrics/dashboard/client/' + encodeURIComponent(row.clientId) + '?minutes=' + mins);
@@ -664,12 +625,12 @@
 
     const sc = det.statusCodes || {};
     $('cdStatusCodes').innerHTML = Object.keys(sc).length
-      ? Object.entries(sc).slice(0,8).map(([code, n]) => `<span class="badge bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200">${code} · ${n}</span>`).join('')
+      ? Object.entries(sc).slice(0,8).map(([code, n]) => `<span class="badge bg-slate-100 text-slate-700">${code} · ${n}</span>`).join('')
       : '<span class="text-xs text-slate-500">No status profile</span>';
 
     const recent = det.recent || [];
     $('clientAnomalies').innerHTML = recent.length
-      ? recent.slice(0,5).map(e => `<div class="rounded-xl border border-slate-200 dark:border-slate-700 p-2 bg-slate-50 dark:bg-slate-900/50"><div class="flex justify-between gap-2"><span class="text-slate-500">${new Date(e.timestamp).toLocaleTimeString()}</span>${severityBadge(severityFor(e))}</div><p class="mt-1 truncate">${deriveEventType(e)} · ${e.path || '-'}</p></div>`).join('')
+      ? recent.slice(0,5).map(e => `<div class="rounded-xl border border-slate-200 p-2 bg-slate-50"><div class="flex justify-between gap-2"><span class="text-slate-500">${new Date(e.timestamp).toLocaleTimeString()}</span>${severityBadge(severityFor(e))}</div><p class="mt-1 truncate">${deriveEventType(e)} · ${e.path || '-'}</p></div>`).join('')
       : '<p class="text-xs text-slate-500">No anomalies recorded.</p>';
 
     upsertChart('clientTrafficChart', 'line', {
@@ -684,7 +645,7 @@
   }
 
   function getMinutes() {
-    const active = document.querySelector('.time-pill.bg-white, .time-pill.dark\\:bg-slate-800');
+    const active = document.querySelector('.time-pill.bg-white');
     return Number(active?.dataset.minutes || 60);
   }
 
@@ -726,9 +687,9 @@
     tb.innerHTML = events.map(e => {
       const sev = severityFor(e);
       const type = deriveEventType(e);
-      return `<tr class="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50/70 dark:hover:bg-slate-900/40">
+      return `<tr class="border-b border-slate-100 hover:bg-slate-50/70">
         <td class="px-4 py-3 text-slate-500">${new Date(e.timestamp).toLocaleTimeString()}</td>
-        <td class="px-4 py-3"><span class="badge bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-300">${type}</span></td>
+        <td class="px-4 py-3"><span class="badge bg-blue-50 text-blue-600">${type}</span></td>
         <td class="px-4 py-3">${severityBadge(sev)}</td>
         <td class="px-4 py-3">${e.tenantId || '—'} / ${e.appId || '—'}</td>
         <td class="px-4 py-3 font-mono">${e.apiKey || '—'}</td>
@@ -880,10 +841,8 @@
     document.querySelectorAll('.time-pill').forEach(b => {
       const active = Number(b.dataset.minutes) === Number(minutes);
       b.classList.toggle('bg-white', active);
-      b.classList.toggle('dark:bg-slate-800', active);
       b.classList.toggle('shadow-sm', active);
       b.classList.toggle('text-slate-900', active);
-      b.classList.toggle('dark:text-slate-100', active);
     });
   }
 
@@ -898,8 +857,8 @@
   document.querySelectorAll('.cmp-btn').forEach(btn => {
     btn.onclick = async () => {
       compareMode = btn.dataset.mode;
-      document.querySelectorAll('.cmp-btn').forEach(x => x.classList.remove('bg-white', 'dark:bg-slate-800'));
-      btn.classList.add('bg-white', 'dark:bg-slate-800');
+      document.querySelectorAll('.cmp-btn').forEach(x => x.classList.remove('bg-white'));
+      btn.classList.add('bg-white');
       if (dashboard) renderAdvancedCharts(dashboard, dashboard.events || []);
     };
   });
