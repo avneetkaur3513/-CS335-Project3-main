@@ -2,9 +2,15 @@ package com.CS335_Project3.api_gateway.filter;
 
 import com.CS335_Project3.api_gateway.RateLimiter;
 import com.CS335_Project3.api_gateway.config.ApiKeyConfig;
+import com.CS335_Project3.api_gateway.config.RuntimeRateLimitPolicyService;
+import com.CS335_Project3.api_gateway.ratelimiter.FixedWindowRateLimiterStrategy;
+import com.CS335_Project3.api_gateway.ratelimiter.LeakyBucketRateLimiterStrategy;
+import com.CS335_Project3.api_gateway.ratelimiter.SlidingWindowRateLimiterStrategy;
+import com.CS335_Project3.api_gateway.ratelimiter.TokenBucketRateLimiterStrategy;
 import jakarta.servlet.ServletException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.mock.web.MockFilterChain;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -28,12 +34,23 @@ class ApiKeyFilterTest {
         ApiKeyConfig config = new ApiKeyConfig();
         // Update to match actual keys used in application.properties
         config.setApiKeys(List.of(
-            "dev-key-token",    // Token Bucket Algorithm, Limit: 5
-            "dev-key-fixed",    // Fixed Window Algorithm, Limit: 5
-            "dev-key-sliding",  // Sliding Window Algorithm, Limit: 5
-            "dev-key-business"  // Token Bucket Algorithm, Limit: 10
+            "dev-key-token",    // Token Bucket Algorithm, Limit: 3
+            "dev-key-fixed",    // Fixed Window Algorithm, Limit: 3
+            "dev-key-sliding",  // Sliding Window Algorithm, Limit: 3
+            "dev-key-business"  // Token Bucket Algorithm, Limit: 6
         ));
-        filter = new ApiKeyFilter(config, new RateLimiter());
+        FixedWindowRateLimiterStrategy fixedWindow = Mockito.mock(FixedWindowRateLimiterStrategy.class);
+        RuntimeRateLimitPolicyService policyService = Mockito.mock(RuntimeRateLimitPolicyService.class);
+        Mockito.when(policyService.getPolicy()).thenReturn(null);
+        RateLimiter rateLimiter = new RateLimiter(
+            new TokenBucketRateLimiterStrategy(),
+            fixedWindow,
+            new SlidingWindowRateLimiterStrategy(),
+            new LeakyBucketRateLimiterStrategy(),
+            null,
+            policyService
+        );
+        filter = new ApiKeyFilter(config, rateLimiter);
     }
 
 
@@ -67,7 +84,7 @@ class ApiKeyFilterTest {
         assertThat(response.getStatus()).isEqualTo(401);
         assertThat(chain.getRequest()).isNull();  // chain was NOT called
         assertThat(response.getContentAsString())
-            .contains("Missing X-API-Key header");
+            .contains("Unauthorized");
     }
 
     @Test
@@ -83,7 +100,7 @@ class ApiKeyFilterTest {
         assertThat(response.getStatus()).isEqualTo(401);
         assertThat(chain.getRequest()).isNull();
         assertThat(response.getContentAsString())
-            .contains("Invalid API key");
+            .contains("Unauthorized");
     }
 
     @Test
@@ -131,8 +148,8 @@ class ApiKeyFilterTest {
     }
 
     @Test
-    void sixthRequest_shouldReturn429() throws ServletException, IOException {
-        for (int i = 1; i <= 5; i++) {
+    void fourthRequest_shouldReturn429() throws ServletException, IOException {
+        for (int i = 1; i <= 3; i++) {
             MockHttpServletRequest request = new MockHttpServletRequest();
             request.addHeader("X-API-Key", "dev-key-token");
             request.setRequestURI("/api/test123/notes");
@@ -145,19 +162,19 @@ class ApiKeyFilterTest {
             assertThat(chain.getRequest()).isNotNull();
     }
 
-    MockHttpServletRequest request6 = new MockHttpServletRequest();
+    MockHttpServletRequest request4 = new MockHttpServletRequest();
     // To test selective multi-rate limit algorithm,
     // use one of the valid keys
-    request6.addHeader("X-API-Key", "dev-key-token");
-    request6.setRequestURI("/api/test123/notes");
-    MockHttpServletResponse response6 = new MockHttpServletResponse();
-    MockFilterChain chain6 = new MockFilterChain();
+    request4.addHeader("X-API-Key", "dev-key-token");
+    request4.setRequestURI("/api/test123/notes");
+    MockHttpServletResponse response4 = new MockHttpServletResponse();
+    MockFilterChain chain4 = new MockFilterChain();
 
-    filter.doFilterInternal(request6, response6, chain6);
+    filter.doFilterInternal(request4, response4, chain4);
 
-    assertThat(response6.getStatus()).isEqualTo(429);
-    assertThat(chain6.getRequest()).isNull();
-    assertThat(response6.getContentAsString())
-        .contains("Rate limit exceeded");
+    assertThat(response4.getStatus()).isEqualTo(429);
+    assertThat(chain4.getRequest()).isNull();
+    assertThat(response4.getContentAsString())
+        .contains("Too Many Requests");
     }
 }

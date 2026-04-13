@@ -1,11 +1,17 @@
 package com.CS335_Project3.api_gateway;
 
+import com.CS335_Project3.api_gateway.config.RuntimeRateLimitPolicy;
+import com.CS335_Project3.api_gateway.config.RuntimeRateLimitPolicyService;
 import com.CS335_Project3.api_gateway.config.TenantRateLimitConfig;
 import com.CS335_Project3.api_gateway.ratelimiter.FixedWindowRateLimiterStrategy;
+import com.CS335_Project3.api_gateway.ratelimiter.LeakyBucketRateLimiterStrategy;
 import com.CS335_Project3.api_gateway.ratelimiter.SlidingWindowRateLimiterStrategy;
 import com.CS335_Project3.api_gateway.ratelimiter.TokenBucketRateLimiterStrategy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -53,12 +59,37 @@ class TenantScopedRateLimiterTest {
     }
 
     private RateLimiter buildRateLimiter(TenantRateLimitConfig cfg) {
+        FixedWindowRateLimiterStrategy fixedWindow = Mockito.mock(FixedWindowRateLimiterStrategy.class);
+        RuntimeRateLimitPolicyService policyService = Mockito.mock(RuntimeRateLimitPolicyService.class);
+        Mockito.when(policyService.getPolicy()).thenAnswer(inv -> buildPolicyFromConfig(cfg));
         return new RateLimiter(
             new TokenBucketRateLimiterStrategy(),
-            new FixedWindowRateLimiterStrategy(),
+            fixedWindow,
             new SlidingWindowRateLimiterStrategy(),
-            cfg
+            new LeakyBucketRateLimiterStrategy(),
+            cfg,
+            policyService
         );
+    }
+
+    private RuntimeRateLimitPolicy buildPolicyFromConfig(TenantRateLimitConfig cfg) {
+        RuntimeRateLimitPolicy policy = new RuntimeRateLimitPolicy();
+        policy.setDefaultLimit(cfg.getDefaultLimit());
+        policy.setDefaultAlgorithm(cfg.getDefaultAlgorithm());
+        for (Map.Entry<String, TenantRateLimitConfig.TenantPolicy> tenantEntry : cfg.getTenants().entrySet()) {
+            RuntimeRateLimitPolicy.TenantPolicy tenant = new RuntimeRateLimitPolicy.TenantPolicy();
+            tenant.setEnabled(tenantEntry.getValue().isEnabled());
+            tenant.setLimit(tenantEntry.getValue().getLimit());
+            tenant.setAlgorithm(tenantEntry.getValue().getAlgorithm());
+            for (Map.Entry<String, TenantRateLimitConfig.AppPolicy> appEntry : tenantEntry.getValue().getApps().entrySet()) {
+                RuntimeRateLimitPolicy.AppPolicy app = new RuntimeRateLimitPolicy.AppPolicy();
+                app.setEnabled(appEntry.getValue().isEnabled());
+                app.setLimit(appEntry.getValue().getLimit());
+                tenant.getApps().put(appEntry.getKey(), app);
+            }
+            policy.getTenants().put(tenantEntry.getKey(), tenant);
+        }
+        return policy;
     }
 
     @Test

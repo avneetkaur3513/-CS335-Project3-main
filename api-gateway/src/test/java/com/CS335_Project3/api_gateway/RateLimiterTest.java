@@ -1,7 +1,13 @@
 package com.CS335_Project3.api_gateway;
 
+import com.CS335_Project3.api_gateway.config.RuntimeRateLimitPolicyService;
+import com.CS335_Project3.api_gateway.ratelimiter.FixedWindowRateLimiterStrategy;
+import com.CS335_Project3.api_gateway.ratelimiter.LeakyBucketRateLimiterStrategy;
+import com.CS335_Project3.api_gateway.ratelimiter.SlidingWindowRateLimiterStrategy;
+import com.CS335_Project3.api_gateway.ratelimiter.TokenBucketRateLimiterStrategy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -11,7 +17,17 @@ class RateLimiterTest {
 
     @BeforeEach
     void setUp() {
-        rateLimiter = new RateLimiter();
+        FixedWindowRateLimiterStrategy fixedWindow = Mockito.mock(FixedWindowRateLimiterStrategy.class);
+        RuntimeRateLimitPolicyService policyService = Mockito.mock(RuntimeRateLimitPolicyService.class);
+        Mockito.when(policyService.getPolicy()).thenReturn(null);
+        rateLimiter = new RateLimiter(
+            new TokenBucketRateLimiterStrategy(),
+            fixedWindow,
+            new SlidingWindowRateLimiterStrategy(),
+            new LeakyBucketRateLimiterStrategy(),
+            null,
+            policyService
+        );
     }
 
     @Test
