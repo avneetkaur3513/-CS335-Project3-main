@@ -79,8 +79,11 @@ public class LoggingFilter extends OncePerRequestFilter {
         String ip        = request.getRemoteAddr();
         String algorithm = rateLimiter.getAlgorithm(apiKey.toLowerCase(), tenantId.toLowerCase(), appId.toLowerCase());
 
-        //records IP for bot detection
-        botDetector.record(ip);
+        //records IP for bot detection (skip for localhost)
+        boolean isLocalhost = "127.0.0.1".equals(ip) || "::1".equals(ip);
+        if (!isLocalhost) {
+            botDetector.record(ip);
+        }
         if (botDetector.isSuspicious(ip)) {
             wrappedResponse.setStatus(403);
             wrappedResponse.setContentType("application/json");
