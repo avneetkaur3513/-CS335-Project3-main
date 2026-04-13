@@ -370,13 +370,11 @@
       <textarea id="configJson" rows="8" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-3 py-3 text-xs font-mono"></textarea>
     </section>
 
-    <footer class="text-center text-xs text-slate-500 pb-2">Gateway Intelligence · Auto-refresh every <span id="refreshLabel">10s</span></footer>
+    <footer class="text-center text-xs text-slate-500 pb-2">Gateway Intelligence · Use the Refresh button to update data</footer>
     </div>
   </main>
 
 <script>
-  const REFRESH_MS = Number(new URLSearchParams(window.location.search).get("refreshMs")) || 10000;
-  document.getElementById("refreshLabel").textContent = (REFRESH_MS / 1000).toFixed(0) + "s";
 
   const $ = (id) => document.getElementById(id);
   const charts = {};
@@ -1151,7 +1149,7 @@
     syncNotificationAccessibility();
     await loadDashboard();
     await loadConfig();
-    setInterval(loadDashboard, REFRESH_MS);
+    // Auto-refresh disabled: use the Refresh button to manually update data.
   })().catch((e) => {
     console.error('Dashboard init failed:', e);
     $('eventMeta').textContent = 'Failed to load dashboard data';
